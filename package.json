@@ -7,7 +7,7 @@
     "type": "module",
     "main": "index.js",
     "scripts": {
-        "start": "npx concurrently -c \"cyan,magenta\" --names \"frontend,backend\" \"npm run start:frontend\" \"npm run start:backend\"",
+        "start": "npx concurrently -c \"blue,green\" --names \"frontend,backend\" \"npm run start:frontend\" \"npm run start:backend\"",
         "start:frontend": "cd frontend && npm start",
         "start:backend": "cd backend && npm start",
         "format": "npx prettier --write .",
