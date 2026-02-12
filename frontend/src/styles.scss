@@ -1,1 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Always dark mode globally
+body, html {
+	background: #181818;
+	color: #f5f5f5;
+}
