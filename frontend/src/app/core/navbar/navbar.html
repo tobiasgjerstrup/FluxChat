@@ -3,7 +3,7 @@
 		<span>🏠</span>
 		<span>Home</span>
 	</button>
-	<button class="nav-btn" aria-label="Notifications">
+	<button class="nav-btn" aria-label="Notifications" (click)="openNotificationsModal()">
 		<span>🔔</span>
 		<span>Notifications</span>
 	</button>
@@ -16,3 +16,10 @@
 		<span>Servers</span>
 	</button>
 </nav>
+
+@if (showNotificationsModal) {
+	<app-modal (closed)="closeNotificationsModal()">
+		<h2>Notifications</h2>
+		<p>No notifications yet.</p>
+	</app-modal>
+}
