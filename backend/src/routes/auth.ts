@@ -1,0 +1,19 @@
+import { Router } from "express";
+import jwt from "jsonwebtoken";
+
+const router = Router();
+
+// Dummy user for demonstration
+const DEMO_USER = { id: "1", username: "user", password: "pass" };
+
+router.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === DEMO_USER.username && password === DEMO_USER.password) {
+    const secret = process.env.JWT_SECRET || "changeme";
+    const token = jwt.sign({ id: DEMO_USER.id, username }, secret, { expiresIn: "1h" });
+    return res.json({ token });
+  }
+  res.status(401).json({ error: "Invalid credentials" });
+});
+
+export default router;

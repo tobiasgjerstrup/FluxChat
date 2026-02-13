@@ -1,0 +1,20 @@
+meta {
+  name: Health Check
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:3001/api/health
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

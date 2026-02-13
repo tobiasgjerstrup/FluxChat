@@ -12,5 +12,10 @@
         "start:backend": "cd backend && npm start",
         "format": "npx prettier --write .",
         "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "devDependencies": {
+        "@types/body-parser": "^1.19.6",
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.6"
     }
 }

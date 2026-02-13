@@ -1,0 +1,26 @@
+meta {
+  name: Post Message
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:3001/api/messages
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "text": "Hello from Bruno!"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
