@@ -15,7 +15,7 @@ function getDb() {
   return db;
 }
 
-export function getAllMessages() {
+export async function getAllMessages() {
   const db = getDb();
   return db.prepare("SELECT * FROM messages ORDER BY createdAt ASC").all();
 }
