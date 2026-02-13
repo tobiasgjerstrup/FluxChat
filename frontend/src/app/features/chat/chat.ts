@@ -1,0 +1,76 @@
+import { Component, ViewChild, ElementRef, AfterViewInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Api, Message } from '../../core/api';
+
+@Component({
+    selector: 'app-chat',
+    standalone: true,
+    imports: [FormsModule],
+    templateUrl: './chat.html',
+    styleUrl: './chat.scss',
+})
+export class Chat implements AfterViewInit {
+    constructor(private api: Api) {}
+
+    @ViewChild('chatHistory', { static: true }) chatHistory!: ElementRef<HTMLDivElement>;
+
+    messages = signal<Message[]>([]);
+    newMessage = '';
+
+    private isUserAtBottom(): boolean {
+        const el = this.chatHistory.nativeElement;
+        return el.scrollHeight - el.scrollTop - el.clientHeight < 5;
+    }
+
+    private scrollToBottom(): void {
+        const el = this.chatHistory.nativeElement;
+        el.scrollTop = el.scrollHeight;
+    }
+
+    sendMessage() {
+        const wasAtBottom = this.isUserAtBottom();
+        if (this.newMessage.trim()) {
+            this.api.postMessage(this.newMessage.trim()).subscribe((message) => {
+                if (wasAtBottom) this.scrollToBottom();
+            });
+            this.newMessage = '';
+        }
+    }
+
+    ngOnInit() {
+        this.api.login('user', 'pass').subscribe(() => {
+            this.api.getMessages().subscribe((messages) => {
+                this.messages.set(messages);
+                setTimeout(() => this.scrollToBottom());
+            });
+            // Connect to WebSocket
+            const ws = this.api.connectWebSocket();
+            ws.onmessage = (event) => {
+                try {
+                    const wasAtBottom = this.isUserAtBottom();
+                    const data = JSON.parse(event.data);
+                    // If the backend sends a single message object
+                    if (data && data.text && data.userId) {
+                        this.messages.update((msgs) => [...msgs, data]);
+                        if (wasAtBottom) {
+                            setTimeout(() => this.scrollToBottom());
+                        }
+                    }
+                    // If the backend sends an array of messages
+                    if (Array.isArray(data)) {
+                        this.messages.set(data);
+                        if (wasAtBottom) {
+                            setTimeout(() => this.scrollToBottom());
+                        }
+                    }
+                } catch (e) {
+                    // Ignore non-JSON or unexpected messages
+                }
+            };
+        });
+    }
+
+    ngAfterViewInit() {
+        this.scrollToBottom();
+    }
+}

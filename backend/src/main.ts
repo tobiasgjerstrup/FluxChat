@@ -15,7 +15,10 @@ const app = express();
 const server = http.createServer(app);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+	origin: '*',
+	credentials: true
+}));
 app.use(express.json());
 
 // JWT Auth Middleware (for protected routes)
@@ -35,7 +38,7 @@ app.get("/api/health", (req: Request, res: Response) => res.json({ status: "ok" 
 // WebSocket setup
 setupWebSocket(server);
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+const PORT = parseInt(process.env.PORT || '3001');
+server.listen(PORT, '0.0.0.0', () => {
 	console.log(`Server running on port ${PORT}`);
 });
