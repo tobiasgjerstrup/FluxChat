@@ -38,7 +38,7 @@ export class VoicechatService {
         }
     }
 
-    async startCall(targetId: string) {
+    async startCall(targetId: string, iceServers?: any[]) {
         if (
             typeof window === 'undefined' ||
             !window.navigator ||
@@ -48,7 +48,7 @@ export class VoicechatService {
             console.warn('getUserMedia is not available in this environment.');
             return;
         }
-        this.peerConnection = this.createPeerConnection(targetId);
+        this.peerConnection = this.createPeerConnection(targetId, iceServers);
         this.localStream = await window.navigator.mediaDevices.getUserMedia({ audio: true });
         this.localStream.getTracks().forEach((track: MediaStreamTrack) => {
             this.peerConnection.addTrack(track, this.localStream);
@@ -68,15 +68,15 @@ export class VoicechatService {
         this.send({ type: 'webrtc-offer', targetId, userId: this.userId, sdp: offer.sdp });
     }
 
-    private createPeerConnection(targetId: string): any {
+    private createPeerConnection(targetId: string, iceServers?: any[]): any {
         if (typeof window === 'undefined') return null;
-        // Add a public STUN server for ICE candidate gathering
+        const defaultIceServers = [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'turn:192.168.1.69:3478?transport=udp', username: 'webrtc', credential: 'password123' },
+            { urls: 'turn:192.168.1.69:3478?transport=tcp', username: 'webrtc', credential: 'password123' },
+        ];
         const pc = new window.RTCPeerConnection({
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'turn:192.168.1.69:3478?transport=udp', username: 'webrtc', credential: 'password123' },
-                { urls: 'turn:192.168.1.69:3478?transport=tcp', username: 'webrtc', credential: 'password123' },
-            ],
+            iceServers: iceServers && iceServers.length ? iceServers : defaultIceServers,
         });
         pc.onicecandidate = (event: any) => {
             if (event.candidate) {

@@ -1,15 +1,21 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, Inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { VoicechatService } from './voicechat.service';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 
 @Component({
   selector: 'app-voicechat',
-  imports: [],
+  imports: [CommonModule, FormsModule],
   templateUrl: './voicechat.html',
   styleUrl: './voicechat.scss',
 })
 export class Voicechat implements AfterViewInit {
+  customTurnUsername: string = '';
+  customTurnPassword: string = '';
+  selectedTurn: string = 'openrelay';
+  customTurn: string = '';
   @ViewChild('localAudio', { static: false }) localAudioRef!: ElementRef<HTMLAudioElement>;
   @ViewChild('remoteAudio', { static: false }) remoteAudioRef!: ElementRef<HTMLAudioElement>;
   @ViewChild('remoteCanvas', { static: false }) remoteCanvasRef!: ElementRef<HTMLCanvasElement>;
@@ -160,7 +166,32 @@ export class Voicechat implements AfterViewInit {
     }
   }
 
+  getTurnConfig() {
+    if (this.selectedTurn === 'openrelay') {
+      return [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+      ];
+    } else if (this.selectedTurn === 'numb') {
+      return [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'turn:numb.viagenie.ca:3478', username: 'webrtc', credential: 'webrtc' },
+        { urls: 'turn:numb.viagenie.ca:3478?transport=tcp', username: 'webrtc', credential: 'webrtc' },
+        { urls: 'turn:numb.viagenie.ca:3478?transport=udp', username: 'webrtc', credential: 'webrtc' },
+      ];
+    } else if (this.selectedTurn === 'custom' && this.customTurn) {
+      return [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: this.customTurn, username: this.customTurnUsername, credential: this.customTurnPassword },
+      ];
+    } else {
+      return [ { urls: 'stun:stun.l.google.com:19302' } ];
+    }
+  }
+
   startCall(targetId: string) {
-    this.voicechatService.startCall(targetId);
+    this.voicechatService.startCall(targetId, this.getTurnConfig());
   }
 }
