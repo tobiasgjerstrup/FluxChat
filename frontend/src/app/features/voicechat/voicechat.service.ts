@@ -4,6 +4,19 @@ const ws = 'wss://tboss.dev/api/v1'; // ws://127.0.0.1:3001
 
 @Injectable({ providedIn: 'root' })
 export class VoicechatService {
+        // Helper to set Opus maxaveragebitrate in SDP
+        private setOpusBitrate(sdp: string, bitrate: number): string {
+            return sdp.replace(/a=fmtp:(\d+) (.*)\r?\n/g, (line, p1, p2) => {
+                if (line.includes('opus')) {
+                    if (p2.includes('maxaveragebitrate')) {
+                        return `a=fmtp:${p1} ${p2.replace(/maxaveragebitrate=\d+/, `maxaveragebitrate=${bitrate}`)}\r\n`;
+                    } else {
+                        return `a=fmtp:${p1} ${p2};maxaveragebitrate=${bitrate}\r\n`;
+                    }
+                }
+                return line;
+            });
+        }
     private ws: any = null;
     private peerConnection: any = null;
     private localStream: any = null;
@@ -49,7 +62,13 @@ export class VoicechatService {
             return;
         }
         this.peerConnection = this.createPeerConnection(targetId, iceServers);
-        this.localStream = await window.navigator.mediaDevices.getUserMedia({ audio: true });
+        this.localStream = await window.navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+            }
+        });
         this.localStream.getTracks().forEach((track: MediaStreamTrack) => {
             this.peerConnection.addTrack(track, this.localStream);
             console.log(
@@ -63,7 +82,8 @@ export class VoicechatService {
                 track.label,
             );
         });
-        const offer = await this.peerConnection.createOffer();
+        let offer = await this.peerConnection.createOffer();
+        offer.sdp = this.setOpusBitrate(offer.sdp, 128000);
         await this.peerConnection.setLocalDescription(offer);
         this.send({ type: 'webrtc-offer', targetId, userId: this.userId, sdp: offer.sdp, iceServers });
     }
@@ -144,7 +164,13 @@ export class VoicechatService {
             console.warn('getUserMedia is not available in this environment.');
             return;
         }
-        this.localStream = await window.navigator.mediaDevices.getUserMedia({ audio: true });
+        this.localStream = await window.navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+            }
+        });
         if (!this.localStream || !this.localStream.getAudioTracks().length) {
             console.warn('[VoiceChat] Callee: No local audio tracks available before answering!');
         } else {
@@ -168,7 +194,9 @@ export class VoicechatService {
             await this.peerConnection.addIceCandidate(candidate);
         }
         this.pendingCandidates = [];
-        const answer = await this.peerConnection.createAnswer();
+        let answer = await this.peerConnection.createAnswer();
+        // Set Opus maxaveragebitrate to 128kbps (128000)
+        answer.sdp = this.setOpusBitrate(answer.sdp, 128000);
         await this.peerConnection.setLocalDescription(answer);
         this.send({ type: 'webrtc-answer', sdp: answer.sdp });
     }
