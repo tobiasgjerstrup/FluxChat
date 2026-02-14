@@ -38,7 +38,7 @@ export class VoicechatService {
         }
     }
 
-    async startCall(targetId: string, iceServers?: any[]) {
+    async startCall(targetId: string, iceServers: any[]) {
         if (
             typeof window === 'undefined' ||
             !window.navigator ||
@@ -65,18 +65,16 @@ export class VoicechatService {
         });
         const offer = await this.peerConnection.createOffer();
         await this.peerConnection.setLocalDescription(offer);
-        this.send({ type: 'webrtc-offer', targetId, userId: this.userId, sdp: offer.sdp });
+        this.send({ type: 'webrtc-offer', targetId, userId: this.userId, sdp: offer.sdp, iceServers });
     }
 
-    private createPeerConnection(targetId: string, iceServers?: any[]): any {
+    private createPeerConnection(targetId: string, iceServers: any[]): any {
         if (typeof window === 'undefined') return null;
-        const defaultIceServers = [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'turn:192.168.1.69:3478?transport=udp', username: 'webrtc', credential: 'password123' },
-            { urls: 'turn:192.168.1.69:3478?transport=tcp', username: 'webrtc', credential: 'password123' },
-        ];
+        if (!iceServers || !iceServers.length) {
+            throw new Error('ICE servers must be provided by the user.');
+        }
         const pc = new window.RTCPeerConnection({
-            iceServers: iceServers && iceServers.length ? iceServers : defaultIceServers,
+            iceServers: iceServers,
         });
         pc.onicecandidate = (event: any) => {
             if (event.candidate) {
@@ -130,10 +128,13 @@ export class VoicechatService {
 
     private async handleOffer(message: any) {
         if (typeof window === 'undefined') return;
-        const { sdp, userId: callerId, targetId } = message;
+        const { sdp, userId: callerId, targetId, iceServers } = message;
         // Always set currentPeerId to the caller's userId (the offer sender)
         this.currentPeerId = callerId;
-        this.peerConnection = this.createPeerConnection(this.currentPeerId || "");
+        if (!iceServers || !iceServers.length) {
+            throw new Error('ICE servers must be provided by the user (from offer message).');
+        }
+        this.peerConnection = this.createPeerConnection(this.currentPeerId || "", iceServers);
         if (
             typeof window === 'undefined' ||
             !window.navigator ||

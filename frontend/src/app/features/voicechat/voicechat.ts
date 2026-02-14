@@ -14,7 +14,7 @@ import { PLATFORM_ID } from '@angular/core';
 export class Voicechat implements AfterViewInit {
   customTurnUsername: string = '';
   customTurnPassword: string = '';
-  selectedTurn: string = 'openrelay';
+  selectedTurn: string = 'tboss';
   customTurn: string = '';
   @ViewChild('localAudio', { static: false }) localAudioRef!: ElementRef<HTMLAudioElement>;
   @ViewChild('remoteAudio', { static: false }) remoteAudioRef!: ElementRef<HTMLAudioElement>;
@@ -167,7 +167,13 @@ export class Voicechat implements AfterViewInit {
   }
 
   getTurnConfig() {
-    if (this.selectedTurn === 'openrelay') {
+    if (this.selectedTurn === 'tboss') {
+      return [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'turn:tboss.dev:3478?transport=udp', username: 'webrtc', credential: 'password123' },
+        { urls: 'turn:tboss.dev:3478?transport=tcp', username: 'webrtc', credential: 'password123' },
+      ];
+    } else if (this.selectedTurn === 'openrelay') {
       return [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
