@@ -32,13 +32,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 
 import type { Request, Response } from 'express';
+import config from './config.js';
 // Health check
 app.get('/api/health', (req: Request, res: Response) => res.json({ status: 'ok' }));
 
 // WebSocket setup
 setupWebSocket(server);
-
-const PORT = parseInt(process.env.PORT || '3001');
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+;
+server.listen(config.port, '0.0.0.0', () => {
+    console.log(`Server running on port ${config.port}`);
 });

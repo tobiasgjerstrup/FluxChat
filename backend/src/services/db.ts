@@ -1,10 +1,11 @@
 import Database from 'better-sqlite3';
+import config from '../config.js';
 
 let db: Database.Database | null = null;
 
 function getDb() {
     if (!db) {
-        db = new Database(process.env.DB_PATH || './chat.sqlite');
+        db = new Database(config.dbPath);
         db.prepare(
             `CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

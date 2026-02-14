@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import config from '../config.js';
 
 const router = Router();
 
@@ -10,7 +11,7 @@ router.post('/login', (req, res) => {
     DEMO_USER.id = String(Math.floor(Math.random() * 100) + 1);
     const { username, password } = req.body;
     if (username === DEMO_USER.username && password === DEMO_USER.password) {
-        const secret = process.env.JWT_SECRET || 'changeme';
+        const secret = config.jwtSecret;
         const token = jwt.sign({ id: DEMO_USER.id, username }, secret, { expiresIn: '1h' });
         return res.json({ token });
     }
