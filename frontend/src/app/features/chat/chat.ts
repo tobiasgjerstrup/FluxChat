@@ -43,34 +43,35 @@ export class Chat implements AfterViewInit {
                 this.messages.set(messages);
                 setTimeout(() => this.scrollToBottom());
             });
-            // Connect to WebSocket
-            const ws = this.api.connectWebSocket();
-            ws.onmessage = (event) => {
-                try {
-                    const wasAtBottom = this.isUserAtBottom();
-                    const data = JSON.parse(event.data);
-                    // If the backend sends a single message object
-                    if (data && data.text && data.userId) {
-                        this.messages.update((msgs) => [...msgs, data]);
-                        if (wasAtBottom) {
-                            setTimeout(() => this.scrollToBottom());
-                        }
-                    }
-                    // If the backend sends an array of messages
-                    if (Array.isArray(data)) {
-                        this.messages.set(data);
-                        if (wasAtBottom) {
-                            setTimeout(() => this.scrollToBottom());
-                        }
-                    }
-                } catch (e) {
-                    // Ignore non-JSON or unexpected messages
-                }
-            };
         });
     }
 
     ngAfterViewInit() {
         this.scrollToBottom();
+
+        // Connect to WebSocket
+        /* const ws = this.api.connectWebSocket();
+        ws.onmessage = (event) => {
+            try {
+                const wasAtBottom = this.isUserAtBottom();
+                const data = JSON.parse(event.data);
+                // If the backend sends a single message object
+                if (data && data.text && data.userId) {
+                    this.messages.update((msgs) => [...msgs, data]);
+                    if (wasAtBottom) {
+                        setTimeout(() => this.scrollToBottom());
+                    }
+                }
+                // If the backend sends an array of messages
+                if (Array.isArray(data)) {
+                    this.messages.set(data);
+                    if (wasAtBottom) {
+                        setTimeout(() => this.scrollToBottom());
+                    }
+                }
+            } catch (e) {
+                // Ignore non-JSON or unexpected messages
+            }
+        }; */
     }
 }

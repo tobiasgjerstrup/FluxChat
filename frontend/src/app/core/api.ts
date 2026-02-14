@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 let JWT = '';
-const ip = '127.0.0.1';
+const ip = 'https://tboss.dev/api/v1'; // http://127.0.0.1:3001
+const ws = 'wss://tboss.dev/api/v1'; // ws://127.0.0.1:3001
 export interface Message {
     id: number;
     text: string;
@@ -17,7 +18,7 @@ export class Api {
     constructor(private http: HttpClient) {}
 
     login(username: string, password: string): Observable<{ token: string }> {
-        return this.http.post<{ token: string }>(`http://${ip}:3001/api/auth/login`, { username, password }).pipe(
+        return this.http.post<{ token: string }>(`${ip}/api/auth/login`, { username, password }).pipe(
             tap((response) => {
                 JWT = response.token;
             }),
@@ -28,17 +29,17 @@ export class Api {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${JWT}`,
         });
-        return this.http.get<Message[]>(`http://${ip}:3001/api/messages`, { headers });
+        return this.http.get<Message[]>(`${ip}/api/messages`, { headers });
     }
 
     postMessage(text: string): Observable<Message> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${JWT}`,
         });
-        return this.http.post<Message>(`http://${ip}:3001/api/messages`, { text }, { headers });
+        return this.http.post<Message>(`${ip}/api/messages`, { text }, { headers });
     }
 
     connectWebSocket(): WebSocket {
-        return new WebSocket(`ws://${ip}:3001/`);
+        return new WebSocket(`${ws}/`);
     }
 }
