@@ -2,19 +2,19 @@ import { Component } from '@angular/core';
 import { Modal } from '../../shared/modal/modal';
 
 @Component({
-  selector: 'app-navbar',
-  imports: [Modal],
-  templateUrl: './navbar.html',
-  styleUrl: './navbar.scss',
+    selector: 'app-navbar',
+    imports: [Modal],
+    templateUrl: './navbar.html',
+    styleUrl: './navbar.scss',
 })
 export class Navbar {
-  showNotificationsModal = false;
+    showNotificationsModal = false;
 
-  openNotificationsModal() {
-    this.showNotificationsModal = true;
-  }
+    openNotificationsModal() {
+        this.showNotificationsModal = true;
+    }
 
-  closeNotificationsModal() {
-    this.showNotificationsModal = false;
-  }
+    closeNotificationsModal() {
+        this.showNotificationsModal = false;
+    }
 }

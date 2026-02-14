@@ -1,38 +1,38 @@
 <div>
-	<h2>Voice Chat</h2>
+    <h2>Voice Chat</h2>
     <label>
-		Your User ID:
-		<input #yourIdInput type="text" />
-	</label>
-	<label>
-		Target User ID:
-		<input #targetIdInput type="text" />
-	</label>
-	<label>
-		TURN Server:
-		<select [(ngModel)]="selectedTurn">
-			<option value="tboss">turn:tboss.dev:3478 </option>
-			<option value="openrelay">turn:openrelay.metered.ca:443 </option>
-			<option value="numb">turn:numb.viagenie.ca:3478</option>
-			<option value="custom">Custom...</option>
-		</select>
-		@if (selectedTurn === 'custom') {
-			<input [(ngModel)]="customTurn" placeholder="turn:host:port" />
-			<input [(ngModel)]="customTurnUsername" placeholder="TURN username" />
-			<input [(ngModel)]="customTurnPassword" placeholder="TURN password" type="password" />
-		}
-	</label>
-	<button (click)="connect(yourIdInput.value)">Connect</button>
-	<button (click)="startCall(targetIdInput.value)">Start Call</button>
-	<div>
-		<h3>Local Audio</h3>
-		<audio #localAudio autoplay></audio>
-	</div>
-	<div>
-		<h3>Remote Audio</h3>
-		<audio #remoteAudio autoplay></audio>
-		<canvas #remoteCanvas width="300" height="60" style="background:#222;display:block;margin-top:8px;"></canvas>
-		<button (click)="playTestTone()">Play Test Tone</button>
-		<button (click)="playTestTone()">Play Test Tone</button>
-	</div>
+        Your User ID:
+        <input #yourIdInput type="text" />
+    </label>
+    <label>
+        Target User ID:
+        <input #targetIdInput type="text" />
+    </label>
+    <label>
+        TURN Server:
+        <select [(ngModel)]="selectedTurn">
+            <option value="tboss">turn:tboss.dev:3478</option>
+            <option value="openrelay">turn:openrelay.metered.ca:443</option>
+            <option value="numb">turn:numb.viagenie.ca:3478</option>
+            <option value="custom">Custom...</option>
+        </select>
+        @if (selectedTurn === 'custom') {
+            <input [(ngModel)]="customTurn" placeholder="turn:host:port" />
+            <input [(ngModel)]="customTurnUsername" placeholder="TURN username" />
+            <input [(ngModel)]="customTurnPassword" placeholder="TURN password" type="password" />
+        }
+    </label>
+    <button (click)="connect(yourIdInput.value)">Connect</button>
+    <button (click)="startCall(targetIdInput.value)">Start Call</button>
+    <div>
+        <h3>Local Audio</h3>
+        <audio #localAudio autoplay></audio>
+    </div>
+    <div>
+        <h3>Remote Audio</h3>
+        <audio #remoteAudio autoplay></audio>
+        <canvas #remoteCanvas width="300" height="60" style="background: #222; display: block; margin-top: 8px"></canvas>
+        <button (click)="playTestTone()">Play Test Tone</button>
+        <button (click)="playTestTone()">Play Test Tone</button>
+    </div>
 </div>

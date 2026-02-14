@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 // Error Handling
 process.on('uncaughtException', (error) => {
-    console.error("Unexpected error: ", error);
+    console.error('Unexpected error: ', error);
 });
 function createWindow() {
     const win = new BrowserWindow({
@@ -21,7 +21,7 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             enableRemoteModule: false,
-        }
+        },
     });
     // Load the Angular app from localhost:4200 for development
     win.loadURL('http://localhost:4200');

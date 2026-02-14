@@ -4,19 +4,19 @@ const ws = 'wss://tboss.dev/api/v1'; // ws://127.0.0.1:3001
 
 @Injectable({ providedIn: 'root' })
 export class VoicechatService {
-        // Helper to set Opus maxaveragebitrate in SDP
-        private setOpusBitrate(sdp: string, bitrate: number): string {
-            return sdp.replace(/a=fmtp:(\d+) (.*)\r?\n/g, (line, p1, p2) => {
-                if (line.includes('opus')) {
-                    if (p2.includes('maxaveragebitrate')) {
-                        return `a=fmtp:${p1} ${p2.replace(/maxaveragebitrate=\d+/, `maxaveragebitrate=${bitrate}`)}\r\n`;
-                    } else {
-                        return `a=fmtp:${p1} ${p2};maxaveragebitrate=${bitrate}\r\n`;
-                    }
+    // Helper to set Opus maxaveragebitrate in SDP
+    private setOpusBitrate(sdp: string, bitrate: number): string {
+        return sdp.replace(/a=fmtp:(\d+) (.*)\r?\n/g, (line, p1, p2) => {
+            if (line.includes('opus')) {
+                if (p2.includes('maxaveragebitrate')) {
+                    return `a=fmtp:${p1} ${p2.replace(/maxaveragebitrate=\d+/, `maxaveragebitrate=${bitrate}`)}\r\n`;
+                } else {
+                    return `a=fmtp:${p1} ${p2};maxaveragebitrate=${bitrate}\r\n`;
                 }
-                return line;
-            });
-        }
+            }
+            return line;
+        });
+    }
     private ws: any = null;
     private peerConnection: any = null;
     private localStream: any = null;
@@ -66,8 +66,8 @@ export class VoicechatService {
             audio: {
                 echoCancellation: false,
                 noiseSuppression: false,
-                autoGainControl: false
-            }
+                autoGainControl: false,
+            },
         });
         this.localStream.getTracks().forEach((track: MediaStreamTrack) => {
             this.peerConnection.addTrack(track, this.localStream);
@@ -115,7 +115,8 @@ export class VoicechatService {
                 event.track.muted,
                 'label:',
                 event.track.label,
-                'STREAM:', this.remoteStream
+                'STREAM:',
+                this.remoteStream,
             );
             event.track.onmute = () => console.log('[VoiceChat] Remote track muted:', event.track);
             event.track.onunmute = () => console.log('[VoiceChat] Remote track unmuted:', event.track);
@@ -154,7 +155,7 @@ export class VoicechatService {
         if (!iceServers || !iceServers.length) {
             throw new Error('ICE servers must be provided by the user (from offer message).');
         }
-        this.peerConnection = this.createPeerConnection(this.currentPeerId || "", iceServers);
+        this.peerConnection = this.createPeerConnection(this.currentPeerId || '', iceServers);
         if (
             typeof window === 'undefined' ||
             !window.navigator ||
@@ -168,8 +169,8 @@ export class VoicechatService {
             audio: {
                 echoCancellation: false,
                 noiseSuppression: false,
-                autoGainControl: false
-            }
+                autoGainControl: false,
+            },
         });
         if (!this.localStream || !this.localStream.getAudioTracks().length) {
             console.warn('[VoiceChat] Callee: No local audio tracks available before answering!');

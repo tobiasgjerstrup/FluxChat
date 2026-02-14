@@ -1,22 +1,14 @@
 <div class="chat-container">
-	<div class="chat-history" #chatHistory>
-		@for (message of messages(); track message){
-			<div class="chat-message">
-				<span class="chat-user">{{ message.userId }}:</span>
-				<span class="chat-text">{{ message.text }}</span>
-			</div>
-		}
-	</div>
-	<form class="chat-input-container" (ngSubmit)="sendMessage()">
-		<input
-			type="text"
-			[(ngModel)]="newMessage"
-			name="message"
-			class="chat-input"
-			placeholder="Type your message..."
-			autocomplete="off"
-			required
-		/>
-		<button type="submit" class="send-button">Send</button>
-	</form>
+    <div class="chat-history" #chatHistory>
+        @for (message of messages(); track message) {
+            <div class="chat-message">
+                <span class="chat-user">{{ message.userId }}:</span>
+                <span class="chat-text">{{ message.text }}</span>
+            </div>
+        }
+    </div>
+    <form class="chat-input-container" (ngSubmit)="sendMessage()">
+        <input type="text" [(ngModel)]="newMessage" name="message" class="chat-input" placeholder="Type your message..." autocomplete="off" required />
+        <button type="submit" class="send-button">Send</button>
+    </form>
 </div>
