@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import messageRoutes from './routes/messages.js';
 import authRoutes from './routes/auth.js';
 import serverRoutes from './routes/servers.js';
+import channelRoutes from './routes/channels.js';
 import { jwtAuthMiddleware } from './middleware/auth.js';
 import { setupWebSocket } from './ws/chat.js';
 
@@ -29,6 +30,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/servers', serverRoutes);
+app.use('/api/channels', channelRoutes);
 
 import type { Request, Response } from 'express';
 import config from './config.js';

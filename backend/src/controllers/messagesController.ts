@@ -18,10 +18,10 @@ export async function getMessages(req: Request, res: Response) {
 
 export async function postMessage(req: Request, res: Response) {
     try {
-        const { content } = req.body;
-        if (!content) return res.status(400).json({ error: 'Content is required' });
+        const { content, channel_id } = req.body;
+        if (!content || !channel_id) return res.status(400).json({ error: 'Content and channel ID are required' });
         const author_id = (req as AuthRequest).user?.id || null; // req.user set by JWT middleware
-        const message = await saveMessage({ content, author_id });
+        const message = saveMessage({ content, author_id, channel_id });
         broadcastMessage({ ...message, author_id });
         res.status(201).json(message);
     } catch (err) {

@@ -9,10 +9,20 @@ export async function getAllMessages() {
     return db.prepare('SELECT * FROM messages ORDER BY created_at ASC').all();
 }
 
-export function saveMessage({ content, author_id }: { content: string; author_id?: string }) {
-    const stmt = db.prepare('INSERT INTO messages (content, author_id) VALUES (?, ?)');
-    const info = stmt.run(content, author_id || null);
-    return { id: info.lastInsertRowid, content, author_id, created_at: new Date().toISOString() };
+export function saveMessage({
+    content,
+    author_id,
+    channel_id,
+}: {
+    content: string;
+    author_id: string;
+    channel_id: number;
+}) {
+    const stmt = db.prepare(
+        "INSERT INTO messages (content, author_id, channel_id, created_at) VALUES (?, ?, ?, datetime('now'))",
+    );
+    const info = stmt.run(content, author_id, channel_id);
+    return { id: info.lastInsertRowid, content, author_id, channel_id, created_at: new Date().toISOString() };
 }
 
 export async function createUser({ username, email, password }: { username: string; email: string; password: string }) {
@@ -64,4 +74,20 @@ export function createServer({
 
 export function getAllServers() {
     return db.prepare('SELECT * FROM Servers ORDER BY created_at ASC').all();
+}
+
+export function createChannel({ server_id, name, type }: { server_id: number; name: string; type: string }) {
+    try {
+        const stmt = db.prepare(
+            "INSERT INTO Channels (server_id, name, type, created_at) VALUES (?, ?, ?, datetime('now'))",
+        );
+        const info = stmt.run(server_id, name, type);
+        return { id: info.lastInsertRowid, server_id, name, type };
+    } catch (err: any) {
+        throw err;
+    }
+}
+
+export function getAllChannels() {
+    return db.prepare('SELECT * FROM Channels ORDER BY created_at ASC').all();
 }

@@ -1,24 +1,17 @@
 meta {
-  name: Post Message
+  name: Get Channels
   type: http
-  seq: 5
+  seq: 11
 }
 
-post {
-  url: {{URL}}/api/messages
+get {
+  url: {{URL}}/api/channels
   body: json
   auth: inherit
 }
 
 headers {
   Content-Type: application/json
-}
-
-body:json {
-  {
-    "content": "Hello from Bruno!",
-    "channel_id": 1
-  }
 }
 
 settings {

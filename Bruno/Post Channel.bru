@@ -1,11 +1,11 @@
 meta {
-  name: Post Message
+  name: Post Channel
   type: http
-  seq: 5
+  seq: 10
 }
 
 post {
-  url: {{URL}}/api/messages
+  url: {{URL}}/api/channels
   body: json
   auth: inherit
 }
@@ -16,8 +16,9 @@ headers {
 
 body:json {
   {
-    "content": "Hello from Bruno!",
-    "channel_id": 1
+    "server_id": 2,
+    "name": "UwU2",
+    "type": "text"
   }
 }
 
