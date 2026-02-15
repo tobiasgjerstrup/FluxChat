@@ -38,6 +38,6 @@ app.get('/api/health', (req: Request, res: Response) => res.json({ status: 'ok' 
 
 // WebSocket setup
 setupWebSocket(server);
-server.listen(config.port, '0.0.0.0', () => {
+server.listen(config.port, config.ip, () => {
     console.log(`Server running on port ${config.port}`);
 });

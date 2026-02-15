@@ -50,7 +50,7 @@ export class Chat implements AfterViewInit {
         this.scrollToBottom();
 
         // Connect to WebSocket
-        /* const ws = this.api.connectWebSocket();
+        const ws = this.api.connectWebSocket();
         ws.onmessage = (event) => {
             try {
                 const wasAtBottom = this.isUserAtBottom();
@@ -72,6 +72,6 @@ export class Chat implements AfterViewInit {
             } catch (e) {
                 // Ignore non-JSON or unexpected messages
             }
-        }; */
+        };
     }
 }
