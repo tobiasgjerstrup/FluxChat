@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-
-const ws = 'wss://tboss.dev/api/v1'; // ws://127.0.0.1:3001
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class VoicechatService {
@@ -26,7 +25,7 @@ export class VoicechatService {
     connectWebSocket(userId: string) {
         if (typeof window === 'undefined') return;
         this.userId = userId;
-        this.ws = new window.WebSocket(`${ws}/`);
+        this.ws = new window.WebSocket(`${environment.ws}/`);
         this.ws.onopen = () => {
             this.send({ type: 'register', userId });
         };

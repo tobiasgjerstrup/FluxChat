@@ -38,11 +38,9 @@ export class Chat implements AfterViewInit {
     }
 
     ngOnInit() {
-        this.api.login('user', 'pass').subscribe(() => {
-            this.api.getMessages().subscribe((messages) => {
-                this.messages.set(messages);
-                setTimeout(() => this.scrollToBottom());
-            });
+        this.api.getMessages().subscribe((messages) => {
+            this.messages.set(messages);
+            setTimeout(() => this.scrollToBottom());
         });
     }
 

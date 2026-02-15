@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { signal } from '@angular/core';
-const ip = 'https://tboss.dev/api/v1'; // http://127.0.0.1:3001
-const ws = 'wss://tboss.dev/api/v1'; // ws://127.0.0.1:3001
+import { environment } from '../../environments/environment';
+
 export interface Message {
     id: number;
     text: string;
@@ -19,29 +19,29 @@ export class Api {
 
     public JWT = signal('');
 
-    login(username: string, password: string): Observable<{ token: string }> {
-        return this.http.post<{ token: string }>(`${ip}/api/auth/login`, { username, password }).pipe(
+    public login(username: string, password: string): Observable<{ token: string }> {
+        return this.http.post<{ token: string }>(`${environment.ip}/api/auth/login`, { username, password }).pipe(
             tap((response) => {
                 this.JWT.set(response.token);
             }),
         );
     }
 
-    getMessages(): Observable<Message[]> {
+    public getMessages(): Observable<Message[]> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return this.http.get<Message[]>(`${ip}/api/messages`, { headers });
+        return this.http.get<Message[]>(`${environment.ip}/api/messages`, { headers });
     }
 
-    postMessage(text: string): Observable<Message> {
+    public postMessage(content: string): Observable<Message> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return this.http.post<Message>(`${ip}/api/messages`, { text }, { headers });
+        return this.http.post<Message>(`${environment.ip}/api/messages`, { content }, { headers });
     }
 
-    connectWebSocket(): WebSocket {
-        return new WebSocket(`${ws}/`);
+    public connectWebSocket(): WebSocket {
+        return new WebSocket(`${environment.ws}/`);
     }
 }

@@ -11,19 +11,21 @@ export async function getMessages(req: Request, res: Response) {
         const messages = await getAllMessages();
         res.json(messages);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Failed to fetch messages' });
     }
 }
 
 export async function postMessage(req: Request, res: Response) {
     try {
-        const { text } = req.body;
-        if (!text) return res.status(400).json({ error: 'Text is required' });
-        const userId = (req as AuthRequest).user?.id || null; // req.user set by JWT middleware
-        const message = await saveMessage({ text, userId });
-        broadcastMessage({ ...message, userId });
+        const { content } = req.body;
+        if (!content) return res.status(400).json({ error: 'Content is required' });
+        const author_id = (req as AuthRequest).user?.id || null; // req.user set by JWT middleware
+        const message = await saveMessage({ content, author_id });
+        broadcastMessage({ ...message, author_id });
         res.status(201).json(message);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Failed to save message' });
     }
 }
