@@ -1,11 +1,11 @@
 meta {
-  name: Post Message
+  name: Post Server
   type: http
-  seq: 5
+  seq: 8
 }
 
 post {
-  url: {{URL}}/api/messages
+  url: {{URL}}/api/servers
   body: json
   auth: inherit
 }
@@ -16,7 +16,7 @@ headers {
 
 body:json {
   {
-    "content": "Hello from Bruno!"
+    "name": "UwU2"
   }
 }
 

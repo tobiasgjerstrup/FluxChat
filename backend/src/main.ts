@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 import messageRoutes from './routes/messages.js';
 import authRoutes from './routes/auth.js';
+import serverRoutes from './routes/servers.js';
 import { jwtAuthMiddleware } from './middleware/auth.js';
 import { setupWebSocket } from './ws/chat.js';
 
@@ -25,11 +26,9 @@ app.use(express.json());
 // JWT Auth Middleware (for protected routes)
 // app.use(jwtAuthMiddleware); // Uncomment to protect all routes
 
-// Auth route
 app.use('/api/auth', authRoutes);
-
-// Message routes
 app.use('/api/messages', messageRoutes);
+app.use('/api/servers', serverRoutes);
 
 import type { Request, Response } from 'express';
 import config from './config.js';

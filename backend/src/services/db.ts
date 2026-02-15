@@ -38,3 +38,30 @@ export function findUserByUsername(username: string) {
         | { id: number; username: string; email: string; password_hash: string };
     return user;
 }
+
+export function createServer({
+    name,
+    owner_id,
+    icon_url = null,
+}: {
+    name: string;
+    owner_id: number;
+    icon_url?: string | null;
+}) {
+    try {
+        const stmt = db.prepare(
+            "INSERT INTO Servers (name, owner_id, icon_url, created_at) VALUES (?, ?, ?, datetime('now'))",
+        );
+        const info = stmt.run(name, owner_id, icon_url);
+        return { id: info.lastInsertRowid, name, owner_id, icon_url };
+    } catch (err: any) {
+        if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            throw new Error('Server name already exists');
+        }
+        throw err;
+    }
+}
+
+export function getAllServers() {
+    return db.prepare('SELECT * FROM Servers ORDER BY created_at ASC').all();
+}
