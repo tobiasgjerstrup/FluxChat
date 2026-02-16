@@ -23,6 +23,7 @@ export class Api {
         return this.http.post<{ token: string }>(`${environment.ip}/api/auth/login`, { username, password }).pipe(
             tap((response) => {
                 this.JWT.set(response.token);
+                localStorage.setItem('jwt', response.token);
             }),
         );
     }
@@ -43,5 +44,9 @@ export class Api {
 
     public connectWebSocket(): WebSocket {
         return new WebSocket(`${environment.ws}/`);
+    }
+
+    public register(username: string, email: string, password: string): Observable<any> {
+        return this.http.post<any>(`${environment.ip}/api/auth/register`, { username, email, password });
     }
 }

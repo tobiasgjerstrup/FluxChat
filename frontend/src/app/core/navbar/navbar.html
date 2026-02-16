@@ -15,11 +15,38 @@
         <span>🖥️</span>
         <span>Servers</span>
     </button>
+    @if (!api.JWT()) {
+        <button class="nav-btn" aria-label="Login" (click)="openLoginModal()">
+            <span>🔑</span>
+            <span>Login</span>
+        </button>
+        <button class="nav-btn" aria-label="Register" (click)="openRegisterModal()">
+            <span>📝</span>
+            <span>Register</span>
+        </button>
+    } @else {
+        <button class="nav-btn" aria-label="Logout" (click)="logout()">
+            <span>🚪</span>
+            <span>Logout</span>
+        </button>
+    }
 </nav>
 
 @if (showNotificationsModal) {
     <app-modal (closed)="closeNotificationsModal()">
         <h2>Notifications</h2>
         <p>No notifications yet.</p>
+    </app-modal>
+}
+
+@if (showLoginModal) {
+    <app-modal (closed)="closeLoginModal()">
+        <app-login (loginSuccess)="closeLoginModal()"></app-login>
+    </app-modal>
+}
+
+@if (showRegisterModal) {
+    <app-modal (closed)="closeRegisterModal()">
+        <app-register (registerSuccess)="closeRegisterModal()"></app-register>
     </app-modal>
 }
