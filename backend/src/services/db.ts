@@ -91,3 +91,28 @@ export function createChannel({ server_id, name, type }: { server_id: number; na
 export function getAllChannels() {
     return db.prepare('SELECT * FROM Channels ORDER BY created_at ASC').all();
 }
+
+export function storeRefreshToken({ user_id, token }: { user_id: number; token: string }) {
+    try {
+        const stmt = db.prepare(
+            "INSERT INTO RefreshTokens (user_id, token, expires_at, created_at) VALUES (?, ?, ?, datetime('now'))",
+        );
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        stmt.run(user_id, token, expiresAt);
+    } catch (err: any) {
+        throw err;
+    }
+}
+
+export function getRefreshToken(token: string) {
+    const stmt = db.prepare('SELECT * FROM RefreshTokens WHERE token = ?');
+    const refreshToken = stmt.get(token) as
+        | undefined
+        | { id: number; user_id: number; token: string; expires_at: string; created_at: string };
+    return refreshToken;
+}
+
+export function deleteRefreshToken(token: string) {
+    const stmt = db.prepare('DELETE FROM RefreshTokens WHERE token = ?');
+    stmt.run(token);
+}

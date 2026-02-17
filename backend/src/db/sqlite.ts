@@ -139,6 +139,7 @@ export async function sqliteDBSetup() {
             created_at DATETIME NOT NULL
         );`,
     ).run();
+
     db.prepare(
         `CREATE TABLE IF NOT EXISTS DMParticipants (
             id INTEGER PRIMARY KEY,
@@ -148,6 +149,7 @@ export async function sqliteDBSetup() {
             FOREIGN KEY (user_id) REFERENCES Users(id)
         );`,
     ).run();
+
     db.prepare(
         `CREATE TABLE IF NOT EXISTS DMMessages (
             id INTEGER PRIMARY KEY,
@@ -160,6 +162,7 @@ export async function sqliteDBSetup() {
             FOREIGN KEY (author_id) REFERENCES Users(id)
         );`,
     ).run();
+
     db.prepare(
         `CREATE TABLE IF NOT EXISTS UserStatus (
             user_id INTEGER PRIMARY KEY,
@@ -169,6 +172,7 @@ export async function sqliteDBSetup() {
             FOREIGN KEY (user_id) REFERENCES Users(id)
         );`,
     ).run();
+
     db.prepare(
         `CREATE TABLE IF NOT EXISTS Notifications (
             id INTEGER PRIMARY KEY,
@@ -180,6 +184,7 @@ export async function sqliteDBSetup() {
             FOREIGN KEY (user_id) REFERENCES Users(id)
         );`,
     ).run();
+
     db.prepare(
         `CREATE TABLE IF NOT EXISTS ServerBans (
             id INTEGER PRIMARY KEY,
@@ -197,6 +202,7 @@ export async function sqliteDBSetup() {
             FOREIGN KEY (unbanned_by_id) REFERENCES Users(id)
         );`,
     ).run();
+
     db.prepare(
         `CREATE TABLE IF NOT EXISTS AuditLogs (
             id INTEGER PRIMARY KEY,
@@ -217,5 +223,19 @@ export async function sqliteDBSetup() {
             FOREIGN KEY (target_message_id) REFERENCES Messages(id)
         );`,
     ).run();
+
+    db.prepare(
+        `CREATE TABLE IF NOT EXISTS RefreshTokens (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            token TEXT NOT NULL,
+            created_at DATETIME NOT NULL,
+            expires_at DATETIME NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES Users(id)
+        );`,
+    ).run();
+
+    db.prepare(`DELETE FROM RefreshTokens WHERE expires_at < datetime('now')`).run();
+
     return db;
 }

@@ -23,7 +23,13 @@ body:json {
 
 script:post-response {
   const token = res.body.token;
-  bru.setEnvVar("JWT", token);
+  const refreshToken = res.body.refreshToken;
+  if (token){
+    bru.setEnvVar("JWT", token);
+  }
+  if (refreshToken){
+    bru.setEnvVar("JWT_REFRESH", refreshToken);
+  }
 }
 
 settings {

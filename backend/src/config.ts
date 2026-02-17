@@ -5,6 +5,7 @@ dotenv.config();
 
 interface RawConfig {
     jwtSecret: string | undefined;
+    jwtRefreshSecret: string | undefined;
     port: number | string | undefined;
     ip: string | undefined;
     dbPath: string | undefined;
@@ -12,35 +13,53 @@ interface RawConfig {
 
 interface Config {
     jwtSecret: string;
+    jwtRefreshSecret: string;
     port: number;
     ip: string;
     dbPath: string;
 }
 
-const config: RawConfig = {
-    jwtSecret: process.env.JWT_SECRET,
-    port: process.env.PORT,
-    ip: process.env.IP,
-    dbPath: process.env.DB_PATH,
+const rawConfig: RawConfig = {
+    jwtSecret: process.env.JWT_SECRET || '',
+    jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || '',
+    port: process.env.PORT || '3000',
+    ip: process.env.IP || '127.0.0.1',
+    dbPath: process.env.DB_PATH || '',
 };
 
-if (!config.jwtSecret || typeof config.jwtSecret !== 'string') {
-    console.error('invalid config!', config);
+if (!rawConfig.jwtSecret) {
+    console.error('invalid config!', rawConfig);
     throw new Error('JWT_SECRET must be a non-empty string');
 }
+if (!rawConfig.jwtRefreshSecret) {
+    console.error('invalid config!', rawConfig);
+    throw new Error('JWT_REFRESH_SECRET must be a non-empty string');
+}
 
-const portNumber = Number(config.port);
+const portNumber = Number(rawConfig.port);
 if (isNaN(portNumber) || portNumber <= 0) {
-    console.error('invalid config!', config);
+    console.error('invalid config!', rawConfig);
     throw new Error('PORT must be a valid number greater than 0');
 }
-config.port = portNumber;
 
-const dbDir = config.dbPath && typeof config.dbPath === 'string' ? path.dirname(config.dbPath) : '';
-if (typeof config.dbPath !== 'string' || !config.dbPath || !fs.existsSync(dbDir)) {
-    console.error('invalid config!', config);
+const dbDir = rawConfig.dbPath && typeof rawConfig.dbPath === 'string' ? path.dirname(rawConfig.dbPath) : '';
+if (typeof rawConfig.dbPath !== 'string' || !rawConfig.dbPath || !fs.existsSync(dbDir)) {
+    console.error('invalid config!', rawConfig);
     throw new Error('DB_PATH directory must exist');
 }
+
+if (typeof rawConfig.ip !== 'string' || !rawConfig.ip || !isValidIP(rawConfig.ip)) {
+    console.error('invalid config!', rawConfig);
+    throw new Error('IP must be a valid IPv4 or IPv6 address');
+}
+
+const config = {
+    jwtSecret: rawConfig.jwtSecret,
+    jwtRefreshSecret: rawConfig.jwtRefreshSecret,
+    port: portNumber,
+    ip: rawConfig.ip,
+    dbPath: rawConfig.dbPath,
+};
 
 function isValidIP(ip: string): boolean {
     const ipv4 = /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/;
@@ -48,9 +67,4 @@ function isValidIP(ip: string): boolean {
     return ipv4.test(ip) || ipv6.test(ip);
 }
 
-if (typeof config.ip !== 'string' || !config.ip || !isValidIP(config.ip)) {
-    console.error('invalid config!', config);
-    throw new Error('IP must be a valid IPv4 or IPv6 address');
-}
-
-export default config as Config;
+export default config;
