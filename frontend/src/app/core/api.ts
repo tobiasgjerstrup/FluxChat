@@ -65,10 +65,10 @@ export class Api {
         return this.http.get<Server[]>(`${environment.ip}/api/servers`, { headers });
     }
 
-    public createServer(name: string): Observable<Server> {
+    public createServer(name: string, icon_url: string): Observable<Server> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return this.http.post<Server>(`${environment.ip}/api/servers`, { name }, { headers });
+        return this.http.post<Server>(`${environment.ip}/api/servers`, { name, icon_url }, { headers });
     }
 }

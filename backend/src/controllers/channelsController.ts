@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createChannel, createServer, getAllChannels, getAllServers } from '../services/db.js';
+import { createChannel, getAllChannels } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
 // Extend Request type to include user property
 interface AuthRequest extends Request {

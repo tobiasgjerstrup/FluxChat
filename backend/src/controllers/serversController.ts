@@ -22,7 +22,7 @@ export async function postServer(req: Request, res: Response) {
         if (!name) return res.status(400).json({ error: 'Name is required' });
         const owner_id = (req as AuthRequest).user?.id || null;
 
-        const server = createServer({ name, owner_id });
+        const server = createServer({ name, owner_id, icon_url: req.body.icon_url });
         broadcastMessage({ ...server, owner_id });
         res.status(201).json(server);
     } catch (err: any) {

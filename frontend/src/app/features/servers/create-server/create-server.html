@@ -1,0 +1,5 @@
+<form class="chat-input-container" (ngSubmit)="createServer()">
+    <input type="text" [(ngModel)]="serverName" name="serverName" class="chat-input" placeholder="Server Name" autocomplete="off" required />
+    <input type="text" [(ngModel)]="serverIcon" name="serverIcon" class="chat-input" placeholder="Server Icon URL" autocomplete="off" required />
+    <button type="submit" class="send-button">Create Server</button>
+</form>
