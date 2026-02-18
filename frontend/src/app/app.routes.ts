@@ -9,4 +9,8 @@ export const routes: Routes = [
         path: 'servers',
         loadComponent: () => import('./features/servers/servers').then((m) => m.Servers),
     },
+    {
+        path: 'server/:id',
+        loadComponent: () => import('./features/server/server').then((m) => m.Server),
+    },
 ];

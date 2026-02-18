@@ -2,10 +2,11 @@ import { Component, signal } from '@angular/core';
 import { Api, Server } from '../../core/api';
 import { Modal } from '../../shared/modal/modal';
 import { CreateServer } from './create-server/create-server';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-servers',
-    imports: [Modal, CreateServer],
+    imports: [Modal, CreateServer, RouterLink],
     templateUrl: './servers.html',
     styleUrl: './servers.scss',
 })
