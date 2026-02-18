@@ -1,5 +1,5 @@
 <nav class="navbar">
-    <button class="nav-btn" aria-label="Home">
+    <button [routerLink]="'/'" class="nav-btn" aria-label="Home">
         <span>🏠</span>
         <span>Home</span>
     </button>
@@ -7,11 +7,11 @@
         <span>🔔</span>
         <span>Notifications</span>
     </button>
-    <button class="nav-btn" aria-label="Friends">
+    <button [routerLink]="'/friends'" class="nav-btn" aria-label="Friends">
         <span>👥</span>
         <span>Friends</span>
     </button>
-    <button class="nav-btn" aria-label="Servers">
+    <button [routerLink]="'/servers'" class="nav-btn" aria-label="Servers">
         <span>🖥️</span>
         <span>Servers</span>
     </button>

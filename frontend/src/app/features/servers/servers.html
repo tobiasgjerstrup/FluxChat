@@ -1,0 +1,8 @@
+@for (server of servers(); track $index) {
+    <div class="server-card">
+        <img [src]="server.icon_url || '/server-default.svg'" height="90" width="90" alt="Server Icon" class="server-icon" />
+    </div>
+}
+<div class="server-card">
+    <img [src]="'/server-add.svg'" height="90" width="90" alt="Server Icon" class="server-icon" />
+</div>

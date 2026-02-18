@@ -3,10 +3,11 @@ import { Modal } from '../../shared/modal/modal';
 import { Login } from '../../features/login/login';
 import { Register } from '../../features/register/register';
 import { Api } from '../api';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-navbar',
-    imports: [Modal, Login, Register],
+    imports: [Modal, Login, Register, RouterLink],
     templateUrl: './navbar.html',
     styleUrl: './navbar.scss',
 })

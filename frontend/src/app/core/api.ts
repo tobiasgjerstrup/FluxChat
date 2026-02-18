@@ -11,6 +11,14 @@ export interface Message {
     createdAt: string;
 }
 
+export interface Server {
+    id: number;
+    name: string;
+    owner_id: string;
+    icon_url: null | string;
+    created_at: string;
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -48,5 +56,19 @@ export class Api {
 
     public register(username: string, email: string, password: string): Observable<any> {
         return this.http.post<any>(`${environment.ip}/api/auth/register`, { username, email, password });
+    }
+
+    public getServers(): Observable<Server[]> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        return this.http.get<Server[]>(`${environment.ip}/api/servers`, { headers });
+    }
+
+    public createServer(name: string): Observable<Server> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        return this.http.post<Server>(`${environment.ip}/api/servers`, { name }, { headers });
     }
 }
