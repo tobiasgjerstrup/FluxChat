@@ -12,6 +12,7 @@ import { Api } from './core/api';
 export class App {
     constructor(public api: Api) {
         api.JWT = signal(localStorage.getItem('jwt') || '');
+        api.JWT_REFRESH = signal(localStorage.getItem('jwt_refresh') || '');
     }
     protected readonly title = signal('flux');
 }

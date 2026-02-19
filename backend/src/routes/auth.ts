@@ -39,10 +39,10 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ error: 'Invalid credentials' });
     }
     const token = jwt.sign({ id: user.id, username: user.username, type: 'access' }, config.jwtSecret, {
-        expiresIn: '1h',
+        expiresIn: config.jwtExpiration,
     });
     const refreshToken = jwt.sign({ id: user.id, username: user.username, type: 'refresh' }, config.jwtRefreshSecret, {
-        expiresIn: '90d',
+        expiresIn: config.jwtRefreshExpiration,
     });
 
     storeRefreshToken({ user_id: user.id, token: refreshToken });
@@ -87,9 +87,8 @@ router.post('/refresh', (req, res) => {
     if (!getRefreshToken(refreshToken)) {
         return res.status(401).json({ error: 'Invalid refresh token' });
     }
-
     const newToken = jwt.sign({ id: payload.id, username: payload.username, type: 'access' }, config.jwtSecret, {
-        expiresIn: '1h',
+        expiresIn: config.jwtExpiration,
     });
     return res.json({ token: newToken });
 });

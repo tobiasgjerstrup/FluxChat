@@ -27,21 +27,19 @@ export class Chat implements AfterViewInit {
         el.scrollTop = el.scrollHeight;
     }
 
-    sendMessage() {
+    async sendMessage() {
         const wasAtBottom = this.isUserAtBottom();
         if (this.newMessage.trim()) {
-            this.api.postMessage(this.newMessage.trim()).subscribe((message) => {
-                if (wasAtBottom) this.scrollToBottom();
-            });
+            await this.api.postMessage(this.newMessage.trim());
+            if (wasAtBottom) this.scrollToBottom();
             this.newMessage = '';
         }
     }
 
-    ngOnInit() {
-        this.api.getMessages().subscribe((messages) => {
-            this.messages.set(messages);
-            setTimeout(() => this.scrollToBottom());
-        });
+    async ngOnInit() {
+        const messages = await this.api.getMessages();
+        this.messages.set(messages);
+        setTimeout(() => this.scrollToBottom());
     }
 
     ngAfterViewInit() {

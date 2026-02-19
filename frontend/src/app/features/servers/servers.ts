@@ -16,10 +16,13 @@ export class Servers {
     public servers = signal<Server[]>([]);
     public showCreateServerModal = false;
 
-    ngOnInit() {
-        this.api.getServers().subscribe((servers) => {
+    async ngOnInit() {
+        try {
+            const servers = await this.api.getServers();
             this.servers.set(servers);
-        });
+        } catch (error) {
+            console.error('Failed to load servers', error);
+        }
     }
 
     public closeCreateServerModal() {

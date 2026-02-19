@@ -1,30 +1,28 @@
 import path from 'path';
 import dotenv from 'dotenv';
 import fs from 'fs';
-dotenv.config();
+import type { StringValue } from 'ms';
 
-interface RawConfig {
-    jwtSecret: string | undefined;
-    jwtRefreshSecret: string | undefined;
-    port: number | string | undefined;
-    ip: string | undefined;
-    dbPath: string | undefined;
-}
+dotenv.config();
 
 interface Config {
     jwtSecret: string;
+    jwtExpiration: StringValue;
     jwtRefreshSecret: string;
+    jwtRefreshExpiration: StringValue;
     port: number;
     ip: string;
     dbPath: string;
 }
 
-const rawConfig: RawConfig = {
-    jwtSecret: process.env.JWT_SECRET || '',
-    jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || '',
-    port: process.env.PORT || '3000',
-    ip: process.env.IP || '127.0.0.1',
-    dbPath: process.env.DB_PATH || '',
+const rawConfig = {
+    jwtSecret: process.env.JWT_SECRET,
+    jwtExpiration: process.env.JWT_EXPIRATION,
+    jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
+    jwtRefreshExpiration: process.env.JWT_REFRESH_EXPIRATION,
+    port: process.env.PORT,
+    ip: process.env.IP,
+    dbPath: process.env.DB_PATH,
 };
 
 if (!rawConfig.jwtSecret) {
@@ -53,9 +51,30 @@ if (typeof rawConfig.ip !== 'string' || !rawConfig.ip || !isValidIP(rawConfig.ip
     throw new Error('IP must be a valid IPv4 or IPv6 address');
 }
 
-const config = {
+if (typeof rawConfig.jwtExpiration !== 'string' || !rawConfig.jwtExpiration) {
+    console.error('invalid config!', rawConfig);
+    throw new Error('JWT_EXPIRATION must be a non-empty string');
+}
+
+if (!isStringValue(rawConfig.jwtExpiration)) {
+    console.error('invalid config!', rawConfig);
+    throw new Error('JWT_EXPIRATION must be a valid duration string');
+}
+// Type assertion is safe here because we just validated it
+const jwtExpiration = rawConfig.jwtExpiration as StringValue;
+
+if (!isStringValue(rawConfig.jwtRefreshExpiration)) {
+    console.error('invalid config!', rawConfig);
+    throw new Error('JWT_REFRESH_EXPIRATION must be a valid duration string');
+}
+// Type assertion is safe here because we just validated it
+const jwtRefreshExpiration = rawConfig.jwtRefreshExpiration as StringValue;
+
+const config: Config = {
     jwtSecret: rawConfig.jwtSecret,
+    jwtExpiration: jwtExpiration,
     jwtRefreshSecret: rawConfig.jwtRefreshSecret,
+    jwtRefreshExpiration: jwtRefreshExpiration,
     port: portNumber,
     ip: rawConfig.ip,
     dbPath: rawConfig.dbPath,
@@ -65,6 +84,11 @@ function isValidIP(ip: string): boolean {
     const ipv4 = /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/;
     const ipv6 = /^([\da-fA-F]{1,4}:){7}[\da-fA-F]{1,4}$/;
     return ipv4.test(ip) || ipv6.test(ip);
+}
+
+function isStringValue(value: any): boolean {
+    const msRegex = /^\d+(\.\d+)?\s*(ms|s|m|h|d|w|y)?$/i;
+    return typeof value === 'string' && msRegex.test(value);
 }
 
 export default config;

@@ -16,15 +16,13 @@ export class Login {
     public username: string = '';
     public password: string = '';
 
-    public login() {
-        this.api.login(this.username, this.password).subscribe({
-            next: (response) => {
-                console.log('Login successful', response);
-                this.loginSuccess.emit();
-            },
-            error: (error) => {
-                console.error('Login failed', error);
-            },
-        });
+    public async login() {
+        try {
+            const response = await this.api.login(this.username, this.password);
+            console.log('Login successful', response);
+            this.loginSuccess.emit();
+        } catch (error) {
+            console.error('Login failed', error);
+        }
     }
 }

@@ -16,9 +16,12 @@ export class CreateServer {
     public serverName = '';
     public serverIcon = '';
 
-    public createServer() {
-        this.api.createServer(this.serverName, this.serverIcon).subscribe(() => {
+    public async createServer() {
+        try {
+            await this.api.createServer(this.serverName, this.serverIcon);
             this.createdServer.emit();
-        });
+        } catch (error) {
+            console.error('Failed to create server', error);
+        }
     }
 }

@@ -17,16 +17,14 @@ export class Register {
     public email: string = '';
     public password: string = '';
 
-    public register() {
-        this.api.register(this.username, this.email, this.password).subscribe({
-            next: (response) => {
-                console.log('Registration successful', response);
-                this.api.login(this.username, this.password).subscribe();
-                this.registerSuccess.emit();
-            },
-            error: (error) => {
-                console.error('Registration failed', error);
-            },
-        });
+    public async register() {
+        try {
+            const response = await this.api.register(this.username, this.email, this.password);
+            console.log('Registration successful', response);
+            await this.api.login(this.username, this.password);
+            this.registerSuccess.emit();
+        } catch (error) {
+            console.error('Registration failed', error);
+        }
     }
 }
