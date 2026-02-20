@@ -1,1 +1,14 @@
-<p>server works!</p>
+@for (channel of channels(); track $index) {
+    <div class="channel-card" [title]="channel.name" [routerLink]="['channel', channel.id]">
+        <p>{{ channel.name }}</p>
+    </div>
+}
+<div class="channel-card" title="Add Channel" (click)="showCreateChannelModal = true">
+    <p>Create channel!</p>
+</div>
+
+@if (showCreateChannelModal) {
+    <app-modal (closed)="closeCreateChannelModal()">
+        <app-create-channel (createdChannel)="closeCreateChannelModal()"></app-create-channel>
+    </app-modal>
+}

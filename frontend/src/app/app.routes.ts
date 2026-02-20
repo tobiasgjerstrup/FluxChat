@@ -10,7 +10,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/servers/servers').then((m) => m.Servers),
     },
     {
-        path: 'server/:id',
+        path: 'server/:serverId',
         loadComponent: () => import('./features/server/server').then((m) => m.Server),
     },
 ];

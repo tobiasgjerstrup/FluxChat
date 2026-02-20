@@ -25,7 +25,10 @@ export class Servers {
         }
     }
 
-    public closeCreateServerModal() {
+    public async closeCreateServerModal() {
         this.showCreateServerModal = false;
+
+        const servers = await this.api.getServers();
+        this.servers.set(servers);
     }
 }

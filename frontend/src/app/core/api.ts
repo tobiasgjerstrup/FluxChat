@@ -28,6 +28,17 @@ export interface Server {
     created_at: string;
 }
 
+export interface Channel {
+    id: number;
+    server_id: number;
+    name: string;
+    type: 'text' | 'voice' | string;
+    parent_id: number | null;
+    position: number;
+    topic: string | null;
+    created_at: string;
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -96,18 +107,34 @@ export class Api {
         return firstValueFrom(this.http.post<Server>(`${environment.ip}/api/servers`, { name, icon_url }, { headers }));
     }
 
+    public async getChannels(server_id: number): Promise<Channel[]> {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+
+        return firstValueFrom(this.http.get<Channel[]>(`${environment.ip}/api/channels/${server_id}`, { headers }));
+    }
+
+    public async createChannel(name: string, server_id: number): Promise<Channel> {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        return firstValueFrom(
+            this.http.post<Channel>(`${environment.ip}/api/channels`, { name, server_id, type: 'text' }, { headers }),
+        );
+    }
+
     private async refreshTokenIfExpired(): Promise<void> {
         const payload = this.getJWTPayload();
         if (!payload || !payload.exp) return;
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp > now) return;
-        console.log('Access token expired, refreshing...');
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
             'refresh-token': `${this.JWT_REFRESH()}`,
         });
-        console.log(headers);
-        console.log(this.JWT(), this.JWT_REFRESH());
 
         // if token is expired, refresh it
         try {

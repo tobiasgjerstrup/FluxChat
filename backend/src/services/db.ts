@@ -88,8 +88,9 @@ export function createChannel({ server_id, name, type }: { server_id: number; na
     }
 }
 
-export function getAllChannels() {
-    return db.prepare('SELECT * FROM Channels ORDER BY created_at ASC').all();
+export function getChannelsFromServer(serverId: number) {
+    const stmt = db.prepare('SELECT * FROM Channels WHERE server_id = ? ORDER BY created_at ASC');
+    return stmt.all(serverId);
 }
 
 export function storeRefreshToken({ user_id, token }: { user_id: number; token: string }) {

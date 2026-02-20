@@ -5,7 +5,7 @@ import { getChannels, postChannel } from '../controllers/channelsController.js';
 const router = Router();
 
 // Get all channels
-router.get('/', jwtAuthMiddleware, getChannels);
+router.get('/:serverId', jwtAuthMiddleware, getChannels);
 
 // Post a new message
 router.post('/', jwtAuthMiddleware, postChannel);
