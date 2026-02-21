@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Api, Message } from '../../core/api';
+import { Api, Message } from '../../../../core/api';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
