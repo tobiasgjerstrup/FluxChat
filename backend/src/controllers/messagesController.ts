@@ -1,5 +1,5 @@
-import e, { Request, Response } from 'express';
-import { getAllMessages, saveMessage } from '../services/db.js';
+import { Request, Response } from 'express';
+import { getMessagesFromChannel, saveMessage } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
 // Extend Request type to include user property
 interface AuthRequest extends Request {
@@ -8,7 +8,11 @@ interface AuthRequest extends Request {
 
 export async function getMessages(req: Request, res: Response) {
     try {
-        const messages = await getAllMessages();
+        const channelId = req.params.channelId;
+        if (!channelId || isNaN(Number(channelId))) {
+            return res.status(400).json({ error: 'Channel ID is required' });
+        }
+        const messages = await getMessagesFromChannel(Number(channelId));
         res.json(messages);
     } catch (err) {
         console.error(err);

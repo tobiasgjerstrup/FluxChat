@@ -1,14 +1,20 @@
-@for (channel of channels(); track $index) {
-    <div class="channel-card" [title]="channel.name" [routerLink]="['channel', channel.id]">
-        <p>{{ channel.name }}</p>
+<div class="server-layout">
+    <div class="channels-list">
+        @for (channel of channels(); track $index) {
+            <div class="channel-card" [title]="channel.name" [routerLink]="[channel.id]">
+                <p>{{ channel.name }}</p>
+            </div>
+        }
+        <div class="channel-card" title="Add Channel" (click)="showCreateChannelModal = true">
+            <p>Create channel!</p>
+        </div>
+        @if (showCreateChannelModal) {
+            <app-modal (closed)="closeCreateChannelModal()">
+                <app-create-channel (createdChannel)="closeCreateChannelModal()"></app-create-channel>
+            </app-modal>
+        }
     </div>
-}
-<div class="channel-card" title="Add Channel" (click)="showCreateChannelModal = true">
-    <p>Create channel!</p>
+    <div class="channel-content">
+        <router-outlet></router-outlet>
+    </div>
 </div>
-
-@if (showCreateChannelModal) {
-    <app-modal (closed)="closeCreateChannelModal()">
-        <app-create-channel (createdChannel)="closeCreateChannelModal()"></app-create-channel>
-    </app-modal>
-}

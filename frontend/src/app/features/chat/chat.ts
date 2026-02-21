@@ -1,6 +1,8 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, signal } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Api, Message } from '../../core/api';
+import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-chat',
@@ -9,13 +11,20 @@ import { Api, Message } from '../../core/api';
     templateUrl: './chat.html',
     styleUrl: './chat.scss',
 })
-export class Chat implements AfterViewInit {
-    constructor(private api: Api) {}
+export class Chat implements AfterViewInit, OnDestroy {
+    private routeSub: Subscription | undefined;
+    private ws: WebSocket | undefined;
+
+    constructor(
+        private api: Api,
+        private route: ActivatedRoute,
+    ) {}
 
     @ViewChild('chatHistory', { static: true }) chatHistory!: ElementRef<HTMLDivElement>;
 
+    private channelId: number = 0;
     messages = signal<Message[]>([]);
-    newMessage = '';
+    newMessage = signal('');
 
     private isUserAtBottom(): boolean {
         const el = this.chatHistory.nativeElement;
@@ -29,31 +38,46 @@ export class Chat implements AfterViewInit {
 
     async sendMessage() {
         const wasAtBottom = this.isUserAtBottom();
-        if (this.newMessage.trim()) {
-            await this.api.postMessage(this.newMessage.trim());
+        if (this.newMessage().trim()) {
+            await this.api.postMessage(this.newMessage().trim(), this.channelId);
             if (wasAtBottom) this.scrollToBottom();
-            this.newMessage = '';
+            this.newMessage.set('');
         }
     }
 
     async ngOnInit() {
-        const messages = await this.api.getMessages();
-        this.messages.set(messages);
-        setTimeout(() => this.scrollToBottom());
+        this.routeSub = this.route.paramMap.subscribe(async (params) => {
+            const newChannelId = Number(params.get('channelId'));
+            if (this.channelId !== newChannelId) {
+                this.channelId = newChannelId;
+                const messages = await this.api.getMessages(this.channelId);
+                this.messages.set(messages);
+                setTimeout(() => this.scrollToBottom());
+            }
+        });
+    }
+    ngOnDestroy() {
+        if (this.routeSub) {
+            this.routeSub.unsubscribe();
+        }
+        if (this.ws) {
+            this.ws.close();
+        }
     }
 
     ngAfterViewInit() {
         this.scrollToBottom();
 
         // Connect to WebSocket
-        const ws = this.api.connectWebSocket();
-        ws.onmessage = (event) => {
+        this.ws = this.api.connectWebSocket();
+        this.ws.onmessage = (event) => {
             try {
                 const wasAtBottom = this.isUserAtBottom();
                 const data = JSON.parse(event.data);
                 // If the backend sends a single message object
-                if (data && data.text && data.userId) {
+                if (data && data.content && data.author_id && data.channel_id === this.channelId) {
                     this.messages.update((msgs) => [...msgs, data]);
+                    console.log('Received new message via WebSocket:', data);
                     if (wasAtBottom) {
                         setTimeout(() => this.scrollToBottom());
                     }

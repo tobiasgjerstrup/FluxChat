@@ -1,12 +1,12 @@
 import { Component, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
 import { Api, Channel } from '../../core/api';
 import { Modal } from '../../shared/modal/modal';
 import { CreateChannel } from './create-channel/create-channel';
 
 @Component({
     selector: 'app-server',
-    imports: [RouterLink, Modal, CreateChannel],
+    imports: [RouterLink, Modal, CreateChannel, RouterOutlet],
     templateUrl: './server.html',
     styleUrl: './server.scss',
 })

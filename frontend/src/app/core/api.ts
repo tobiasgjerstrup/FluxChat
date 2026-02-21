@@ -15,9 +15,11 @@ export interface JWTPayload {
 
 export interface Message {
     id: number;
-    text: string;
-    userId: string;
-    createdAt: string;
+    content: string;
+    author_id: number;
+    author_username: string;
+    channel_id: number;
+    created_at: string;
 }
 
 export interface Server {
@@ -64,20 +66,22 @@ export class Api {
         return response;
     }
 
-    public async getMessages(): Promise<Message[]> {
+    public async getMessages(channel_id: number): Promise<Message[]> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return firstValueFrom(this.http.get<Message[]>(`${environment.ip}/api/messages`, { headers }));
+        return firstValueFrom(this.http.get<Message[]>(`${environment.ip}/api/messages/${channel_id}`, { headers }));
     }
 
-    public async postMessage(content: string): Promise<Message> {
+    public async postMessage(content: string, channel_id: number): Promise<Message> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return firstValueFrom(this.http.post<Message>(`${environment.ip}/api/messages`, { content }, { headers }));
+        return firstValueFrom(
+            this.http.post<Message>(`${environment.ip}/api/messages`, { content, channel_id }, { headers }),
+        );
     }
 
     public connectWebSocket(): WebSocket {

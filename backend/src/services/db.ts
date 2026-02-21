@@ -5,8 +5,15 @@ import bcrypt from 'bcrypt';
 
 const db: Database.Database = await sqliteDBSetup();
 
-export async function getAllMessages() {
-    return db.prepare('SELECT * FROM messages ORDER BY created_at ASC').all();
+export async function getMessagesFromChannel(channelId: number) {
+    const stmt = db.prepare(`
+        SELECT messages.*, Users.username AS author_username
+        FROM messages
+        JOIN Users ON messages.author_id = Users.id
+        WHERE messages.channel_id = ?
+        ORDER BY messages.created_at ASC
+    `);
+    return stmt.all(channelId);
 }
 
 export function saveMessage({

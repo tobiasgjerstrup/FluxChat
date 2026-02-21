@@ -5,7 +5,7 @@ import { jwtAuthMiddleware } from '../middleware/auth.js';
 const router = Router();
 
 // Get all messages
-router.get('/', jwtAuthMiddleware, getMessages);
+router.get('/:channelId', jwtAuthMiddleware, getMessages);
 
 // Post a new message
 router.post('/', jwtAuthMiddleware, postMessage);

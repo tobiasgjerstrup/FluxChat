@@ -2,8 +2,8 @@
     <div class="chat-history" #chatHistory>
         @for (message of messages(); track message) {
             <div class="chat-message">
-                <span class="chat-user">{{ message.userId }}:</span>
-                <span class="chat-text">{{ message.text }}</span>
+                <span class="chat-user">{{ message.author_username }}:</span>
+                <span class="chat-text">{{ message.content }}</span>
             </div>
         }
     </div>

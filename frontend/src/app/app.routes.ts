@@ -12,5 +12,11 @@ export const routes: Routes = [
     {
         path: 'server/:serverId',
         loadComponent: () => import('./features/server/server').then((m) => m.Server),
+        children: [
+            {
+                path: ':channelId',
+                loadComponent: () => import('./features/server/channel/channel').then((m) => m.Channel),
+            },
+        ],
     },
 ];
