@@ -124,3 +124,9 @@ export function deleteRefreshToken(token: string) {
     const stmt = db.prepare('DELETE FROM RefreshTokens WHERE token = ?');
     stmt.run(token);
 }
+
+export function getUsernameById(userId: number) {
+    const stmt = db.prepare('SELECT username FROM Users WHERE id = ?');
+    const row = stmt.get(userId) as { username: string } | undefined;
+    return row ? row.username : null;
+}

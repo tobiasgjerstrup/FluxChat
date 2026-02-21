@@ -1,6 +1,5 @@
 import { Server as HttpServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
-import jwt from 'jsonwebtoken';
 
 let wss: WebSocketServer | null = null;
 

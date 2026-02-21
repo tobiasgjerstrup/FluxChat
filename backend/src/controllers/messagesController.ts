@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getMessagesFromChannel, saveMessage } from '../services/db.js';
+import { getMessagesFromChannel, getUsernameById, saveMessage } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
 // Extend Request type to include user property
 interface AuthRequest extends Request {
@@ -26,7 +26,8 @@ export async function postMessage(req: Request, res: Response) {
         if (!content || !channel_id) return res.status(400).json({ error: 'Content and channel ID are required' });
         const author_id = (req as AuthRequest).user?.id || null; // req.user set by JWT middleware
         const message = saveMessage({ content, author_id, channel_id });
-        broadcastMessage({ ...message, author_id });
+        const author_username = getUsernameById(author_id); // Optionally include author's username
+        broadcastMessage({ ...message, author_id, author_username });
         res.status(201).json(message);
     } catch (err) {
         console.error(err);
