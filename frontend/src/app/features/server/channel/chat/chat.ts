@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { Api, Message } from '../../../../core/api';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { url } from 'inspector';
 
 @Component({
     selector: 'app-chat',
@@ -18,6 +20,7 @@ export class Chat implements AfterViewInit, OnDestroy {
     constructor(
         private api: Api,
         private route: ActivatedRoute,
+        private sanitizer: DomSanitizer,
     ) {}
 
     @ViewChild('chatHistory', { static: true }) chatHistory!: ElementRef<HTMLDivElement>;
@@ -56,6 +59,7 @@ export class Chat implements AfterViewInit, OnDestroy {
             }
         });
     }
+
     ngOnDestroy() {
         if (this.routeSub) {
             this.routeSub.unsubscribe();
@@ -93,5 +97,18 @@ export class Chat implements AfterViewInit, OnDestroy {
                 // Ignore non-JSON or unexpected messages
             }
         };
+    }
+
+    linkify(text: string): SafeHtml {
+        if (!text) return '';
+        const urlRegex = /((https?:\/\/|www\.)[^\s]+)/g;
+        const replace = text.replace(urlRegex, (url) => {
+            let href = url;
+            if (!href.startsWith('http')) {
+                href = 'http://' + href;
+            }
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
+        return this.sanitizer.bypassSecurityTrustHtml(replace);
     }
 }

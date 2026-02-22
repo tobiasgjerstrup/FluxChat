@@ -3,7 +3,7 @@
         @for (message of messages(); track message) {
             <div class="chat-message">
                 <span class="chat-user">{{ message.author_username }}:</span>
-                <span class="chat-text">{{ message.content }}</span>
+                <span class="chat-text" [innerHTML]="linkify(message.content)"></span>
             </div>
         }
     </div>
