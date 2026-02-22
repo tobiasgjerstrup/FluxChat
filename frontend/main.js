@@ -3,7 +3,8 @@
 import electron from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-const { app, BrowserWindow } = electron;
+import { autoUpdater } from 'electron-updater';
+const { app, BrowserWindow, dialog } = electron;
 
 // Fix __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -29,10 +30,35 @@ function createWindow() {
     // win.loadFile(path.join(__dirname, 'dist', 'flux', 'browser', 'index.html'));
 }
 // App Lifecycle
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    createWindow();
+    // Auto-updater logic
+    autoUpdater.checkForUpdatesAndNotify();
+});
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+// Auto-updater events
+autoUpdater.on('update-available', () => {
+    dialog.showMessageBox({
+        type: 'info',
+        title: 'Update available',
+        message: 'A new update is available. Downloading now...',
+    });
+});
+
+autoUpdater.on('update-downloaded', () => {
+    dialog
+        .showMessageBox({
+            type: 'info',
+            title: 'Update ready',
+            message: 'Update downloaded. The app will now restart to apply the update.',
+        })
+        .then(() => {
+            autoUpdater.quitAndInstall();
+        });
 });
