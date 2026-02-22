@@ -16,6 +16,10 @@
     "private": true,
     "packageManager": "npm@11.5.2",
     "main": "main.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tobiasgjerstrup/FluxChat"
+    },
     "dependencies": {
         "@angular/common": "^21.1.0",
         "@angular/compiler": "^21.1.0",
