@@ -114,10 +114,15 @@ export class Chat implements AfterViewInit, OnDestroy {
         });
         // Linkify URLs
         const urlRegex = /((https?:\/\/|www\.)[^\s]+)/g;
+        const imageRegex = /\.(jpeg|jpg|gif|png|bmp|webp)$/i;
         const linked = escaped.replace(urlRegex, (url) => {
             let href = url;
             if (!href.startsWith('http')) {
                 href = 'http://' + href;
+            }
+            if (imageRegex.test(href)) {
+                // Render image tag
+                return `<img src="${href}" alt="image" style="max-width:200px;max-height:200px;">`;
             }
             return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
         });
