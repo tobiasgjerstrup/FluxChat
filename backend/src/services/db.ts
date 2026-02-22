@@ -1,5 +1,13 @@
 import Database from 'better-sqlite3';
 
+export interface Server {
+    id: number;
+    owner_id: number;
+    name: string;
+    icon_url: string | null;
+    created_at: string;
+}
+
 import { sqliteDBSetup } from '../db/sqlite.js';
 import bcrypt from 'bcrypt';
 
@@ -129,4 +137,113 @@ export function getUsernameById(userId: number) {
     const stmt = db.prepare('SELECT username FROM Users WHERE id = ?');
     const row = stmt.get(userId) as { username: string } | undefined;
     return row ? row.username : null;
+}
+
+export function addServerMember({ server_id, user_id }: { server_id: number | bigint; user_id: number }) {
+    try {
+        const stmt = db.prepare(
+            "INSERT INTO ServerMembers (server_id, user_id, joined_at) VALUES (?, ?, datetime('now'))",
+        );
+        stmt.run(server_id, user_id);
+    } catch (err: any) {
+        throw err;
+    }
+}
+
+export function getServerUserIsMemberOf(user_id: number): Server[] {
+    const stmt = db.prepare(
+        'SELECT * FROM Servers WHERE id IN (SELECT server_id FROM ServerMembers WHERE user_id = ?) ORDER BY created_at ASC',
+    );
+    return stmt.all(user_id) as Server[];
+}
+
+export function createServerInvite({
+    server_id,
+    creator_id,
+    channel_id,
+    max_uses,
+    expires_at,
+    temporary,
+}: {
+    server_id: number;
+    creator_id: number;
+    channel_id?: number;
+    max_uses?: number;
+    expires_at?: string;
+    temporary?: boolean;
+}) {
+    try {
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const stmt = db.prepare(
+            "INSERT INTO ServerInvites (code, server_id, channel_id, creator_id, max_uses, expires_at, temporary, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+        );
+        const info = stmt.run(
+            code,
+            server_id,
+            channel_id || null,
+            creator_id,
+            max_uses || null,
+            expires_at || null,
+            temporary ? 1 : 0,
+        );
+        return {
+            id: info.lastInsertRowid,
+            code,
+            server_id,
+            channel_id: channel_id || null,
+            creator_id,
+            max_uses: max_uses || null,
+            expires_at: expires_at || null,
+            temporary: temporary ? 1 : 0,
+        };
+    } catch (err: any) {
+        throw err;
+    }
+}
+
+export function getServerInviteByCode(code: string) {
+    const stmt = db.prepare('SELECT * FROM ServerInvites WHERE code = ?');
+    const invite = stmt.get(code) as
+        | undefined
+        | {
+              id: number;
+              code: string;
+              server_id: number;
+              channel_id: number | null;
+              creator_id: number;
+              max_uses: number | null;
+              uses: number;
+              expires_at: string | null;
+              temporary: boolean;
+              revoked: boolean;
+              created_at: string;
+          };
+    return invite;
+}
+
+export function joinServerWithInvite(inviteCode: string, user_id: number) {
+    const invite = getServerInviteByCode(inviteCode);
+    if (!invite) {
+        throw new Error('Invalid invite code');
+    }
+    if (invite.revoked) {
+        throw new Error('Invite has been revoked');
+    }
+    if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+        throw new Error('Invite has expired');
+    }
+    if (invite.max_uses && invite.uses >= invite.max_uses) {
+        throw new Error('Invite has reached its maximum uses');
+    }
+    if (getServerUserIsMemberOf(user_id).find((s) => s.id === invite.server_id)) {
+        throw new Error('You are already a member of this server');
+    }
+
+    addServerMember({ server_id: invite.server_id, user_id });
+    incrementInviteUses(invite.id);
+}
+
+export function incrementInviteUses(inviteId: number) {
+    const stmt = db.prepare('UPDATE ServerInvites SET uses = uses + 1 WHERE id = ?');
+    stmt.run(inviteId);
 }

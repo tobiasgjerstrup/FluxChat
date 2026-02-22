@@ -225,6 +225,25 @@ export async function sqliteDBSetup() {
     ).run();
 
     db.prepare(
+        `CREATE TABLE IF NOT EXISTS ServerInvites (
+                id INTEGER PRIMARY KEY,
+                code TEXT NOT NULL UNIQUE,
+                server_id INTEGER NOT NULL,
+                channel_id INTEGER,
+                creator_id INTEGER NOT NULL,
+                max_uses INTEGER,
+                uses INTEGER NOT NULL DEFAULT 0,
+                expires_at DATETIME,
+                temporary BOOLEAN NOT NULL DEFAULT 0,
+                revoked BOOLEAN NOT NULL DEFAULT 0,
+                created_at DATETIME NOT NULL,
+                FOREIGN KEY (server_id) REFERENCES Servers(id),
+                FOREIGN KEY (channel_id) REFERENCES Channels(id),
+                FOREIGN KEY (creator_id) REFERENCES Users(id)
+            );`,
+    ).run();
+
+    db.prepare(
         `CREATE TABLE IF NOT EXISTS RefreshTokens (
             id INTEGER PRIMARY KEY,
             user_id INTEGER NOT NULL,

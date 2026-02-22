@@ -1,0 +1,26 @@
+meta {
+  name: Post Server Invite
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{URL}}/api/servers/invite
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "server_id": 14
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
