@@ -1,6 +1,6 @@
 {
     "name": "flux",
-    "version": "0.0.0",
+    "version": "0.1.0",
     "scripts": {
         "ng": "ng serve",
         "start": "npx concurrently --names \"angular,electron\" --prefix-colors \"magenta,cyan\" \"ng serve\" \"npx wait-on http://localhost:4200 && electron .\"",
@@ -8,7 +8,9 @@
         "watch": "ng build --watch --configuration development",
         "test": "ng test",
         "serve:ssr:flux": "node dist/flux/server/server.mjs",
-        "electron": "ng build && electron ."
+        "electron": "ng build && electron .",
+        "dist:publish": "electron-builder --win --publish=always",
+        "dist": "electron-builder --win"
     },
     "type": "module",
     "private": true,
@@ -35,8 +37,21 @@
         "@types/express": "^5.0.1",
         "@types/node": "^20.17.19",
         "electron": "^40.6.0",
+        "electron-builder": "^26.8.1",
         "jsdom": "^27.1.0",
         "typescript": "~5.9.2",
         "vitest": "^4.0.8"
+    },
+    "build": {
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "tobiasgjerstrup",
+                "repo": "FluxChat"
+            }
+        ],
+        "win": {
+            "target": "nsis"
+        }
     }
 }
