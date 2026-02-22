@@ -101,14 +101,26 @@ export class Chat implements AfterViewInit, OnDestroy {
 
     linkify(text: string): SafeHtml {
         if (!text) return '';
+        // Escape HTML special characters
+        const escaped = text.replace(/[&<>"']/g, (char) => {
+            const map: { [key: string]: string } = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            };
+            return map[char] ?? char;
+        });
+        // Linkify URLs
         const urlRegex = /((https?:\/\/|www\.)[^\s]+)/g;
-        const replace = text.replace(urlRegex, (url) => {
+        const linked = escaped.replace(urlRegex, (url) => {
             let href = url;
             if (!href.startsWith('http')) {
                 href = 'http://' + href;
             }
             return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
         });
-        return this.sanitizer.bypassSecurityTrustHtml(replace);
+        return this.sanitizer.bypassSecurityTrustHtml(linked);
     }
 }
