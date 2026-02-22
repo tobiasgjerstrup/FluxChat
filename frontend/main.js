@@ -28,14 +28,14 @@ function createWindow() {
             contextIsolation: true,
             enableRemoteModule: false,
         },
-        title: `FluxChat v${appVersion}`, // Display version at the top
+        title: `FluxChat v${appVersion}`,
     });
-    // Load the Angular app from localhost:4200 for development
-    //win.loadURL('http://localhost:4200');
-    win.loadURL('https://tboss.dev');
-    // Load the built Angular app
-    // win.loadFile(path.join(__dirname, 'dist', 'flux', 'browser', 'index.html'));
-    console.log(`Window created. App version: ${appVersion}`);
+
+    if (app.isPackaged) {
+        win.loadURL('https://tboss.dev');
+    } else {
+        win.loadURL('http://localhost:4200');
+    }
 }
 // App Lifecycle
 app.whenReady().then(() => {
