@@ -1,7 +1,10 @@
 <div class="server-layout">
     <div class="channels-list">
+        <div class="channel-card" title="Admin Panel" [routerLink]="['admin-panel']">
+            <p>Admin Panel</p>
+        </div>
         @for (channel of channels(); track $index) {
-            <div class="channel-card" [title]="channel.name" [routerLink]="[channel.id]">
+            <div class="channel-card" [title]="channel.name" [routerLink]="['channel', channel.id]">
                 <p>{{ channel.name }}</p>
             </div>
         }
