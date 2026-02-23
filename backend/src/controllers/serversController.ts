@@ -7,6 +7,7 @@ import {
     joinServerWithInvite,
 } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
+import config from '../config.js';
 // Extend Request type to include user property
 interface AuthRequest extends Request {
     user?: any;
@@ -62,8 +63,12 @@ export async function postServerInvite(req: Request, res: Response) {
             return res.status(403).json({ error: 'You must be a member of the server to create an invite' });
         }
 
-        createServerInvite({ server_id, channel_id, max_uses, expires_at, temporary, creator_id });
-        res.status(201).json({ message: 'Server invite created successfully' });
+        const inviteRes = createServerInvite({ server_id, channel_id, max_uses, expires_at, temporary, creator_id });
+        res.status(201).json({
+            message: 'Server invite created successfully',
+            invite_code: inviteRes.code,
+            invite_link: `${config.frontendUrl}/invite/${inviteRes.code}`,
+        });
     } catch (err: any) {
         console.error(err);
         res.status(500).json({ error: 'Failed to create server invite' });

@@ -13,6 +13,7 @@ interface Config {
     port: number;
     ip: string;
     dbPath: string;
+    frontendUrl: string;
 }
 
 const rawConfig = {
@@ -23,6 +24,7 @@ const rawConfig = {
     port: process.env.PORT,
     ip: process.env.IP,
     dbPath: process.env.DB_PATH,
+    frontendUrl: process.env.FRONTEND_URL,
 };
 
 if (!rawConfig.jwtSecret) {
@@ -70,6 +72,11 @@ if (!isStringValue(rawConfig.jwtRefreshExpiration)) {
 // Type assertion is safe here because we just validated it
 const jwtRefreshExpiration = rawConfig.jwtRefreshExpiration as StringValue;
 
+if (typeof rawConfig.frontendUrl !== 'string' || !rawConfig.frontendUrl) {
+    console.error('invalid config!', rawConfig);
+    throw new Error('FRONTEND_URL must be a non-empty string');
+}
+
 const config: Config = {
     jwtSecret: rawConfig.jwtSecret,
     jwtExpiration: jwtExpiration,
@@ -78,6 +85,7 @@ const config: Config = {
     port: portNumber,
     ip: rawConfig.ip,
     dbPath: rawConfig.dbPath,
+    frontendUrl: rawConfig.frontendUrl,
 };
 
 function isValidIP(ip: string): boolean {
