@@ -1,0 +1,6 @@
+<button class="send-button" (click)="showCreateServerInviteModal = true">Server Invite</button>
+@if (showCreateServerInviteModal) {
+    <app-modal (closed)="closeCreateServerInviteModal()">
+        <app-create-server-invite></app-create-server-invite>
+    </app-modal>
+}

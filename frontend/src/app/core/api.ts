@@ -130,6 +130,33 @@ export class Api {
         );
     }
 
+    public async createServerInvite(server_id: number) {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        return firstValueFrom(
+            this.http.post<{ message: string; invite_code: string; invite_link: string }>(
+                `${environment.ip}/api/servers/invite`,
+                { server_id },
+                { headers },
+            ),
+        );
+    }
+
+    public async useServerInvite(server_id: string) {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        return firstValueFrom(
+            this.http.get<{ message: string; invite_code: string; invite_link: string }>(
+                `${environment.ip}/api/servers/invite/${server_id}`,
+                { headers },
+            ),
+        );
+    }
+
     private async refreshTokenIfExpired(): Promise<void> {
         const payload = this.getJWTPayload();
         if (!payload || !payload.exp) return;
