@@ -3,19 +3,19 @@
 .chat-input-container {
     display: flex;
     padding: 12px;
-    border-top: 1px solid $border-dark;
-    background: $bg-dark;
+    border-top: 1px solid $border;
+    background: $bg;
 }
 
 .chat-input {
     flex: 1 1 auto;
     padding: 8px 12px;
-    border: 1px solid $border-dark;
+    border: 1px solid $border;
     border-radius: 4px;
     font-size: 1rem;
     margin-right: 8px;
-    background: $bg-dark-alt;
-    color: $text-light;
+    background: $bg-alt;
+    color: $text;
     outline: none;
     transition: border 0.2s;
 }
@@ -26,7 +26,7 @@
 .send-button {
     padding: 8px 18px;
     background: $primary;
-    color: $text-light;
+    color: $text;
     border: none;
     border-radius: 4px;
     font-size: 1rem;

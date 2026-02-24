@@ -5,11 +5,11 @@
     flex-direction: column;
     /* Remove height: 100% and set a more reasonable max-height */
     max-height: 85vh;
-    border: 1px solid $border-dark;
+    border: 1px solid $border;
     border-radius: 8px;
-    background: $bg-dark-alt;
+    background: $bg-alt;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-    color: $text-light;
+    color: $text;
 }
 
 .chat-history {
@@ -23,12 +23,12 @@
 
 .chat-message {
     padding: 8px 12px;
-    background: $bg-dark;
+    background: $bg;
     border-radius: 6px;
     max-width: 70%;
     align-self: flex-start;
-    color: $text-light;
-    border: 1px solid $border-dark;
+    color: $text;
+    border: 1px solid $border;
 }
 
 .chat-user {
@@ -40,19 +40,19 @@
 .chat-input-container {
     display: flex;
     padding: 12px;
-    border-top: 1px solid $border-dark;
-    background: $bg-dark;
+    border-top: 1px solid $border;
+    background: $bg;
 }
 
 .chat-input {
     flex: 1 1 auto;
     padding: 8px 12px;
-    border: 1px solid $border-dark;
+    border: 1px solid $border;
     border-radius: 4px;
     font-size: 1rem;
     margin-right: 8px;
-    background: $bg-dark-alt;
-    color: $text-light;
+    background: $bg-alt;
+    color: $text;
     outline: none;
     transition: border 0.2s;
 }
@@ -63,7 +63,7 @@
 .send-button {
     padding: 8px 18px;
     background: $primary;
-    color: $text-light;
+    color: $text;
     border: none;
     border-radius: 4px;
     font-size: 1rem;
