@@ -1,3 +1,5 @@
+@import '../../../mixins';
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -12,8 +14,8 @@
 }
 
 .modal-box {
-    background: #222;
-    color: #f5f5f5;
+    background: $bg-secondary;
+    color: $text-light;
     padding: 2rem;
     border-radius: 8px;
     min-width: 300px;
@@ -28,7 +30,7 @@
     right: 1rem;
     background: none;
     border: none;
-    color: #f5f5f5;
+    color: $text-light;
     font-size: 1.5rem;
     cursor: pointer;
 }
