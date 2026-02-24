@@ -10,6 +10,7 @@ export interface Server {
 
 import { sqliteDBSetup } from '../db/sqlite.js';
 import bcrypt from 'bcrypt';
+import { HttpError } from '../utils/errors.js';
 
 const db: Database.Database = await sqliteDBSetup();
 
@@ -48,9 +49,9 @@ export async function createUser({ username, email, password }: { username: stri
         );
         const info = stmt.run(username, email, password_hash);
         return { id: info.lastInsertRowid, username, email };
-    } catch (err: any) {
-        if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-            throw new Error('Username or email already exists');
+    } catch (err) {
+        if (err instanceof Database.SqliteError && err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            throw new HttpError('Username or email already exists', 400);
         }
         throw err;
     }
@@ -79,9 +80,9 @@ export function createServer({
         );
         const info = stmt.run(name, owner_id, icon_url);
         return { id: info.lastInsertRowid, name, owner_id, icon_url };
-    } catch (err: any) {
-        if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-            throw new Error('Server name already exists');
+    } catch (err) {
+        if (err instanceof Database.SqliteError && err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            throw new HttpError('Server name already exists', 400);
         }
         throw err;
     }
@@ -92,15 +93,11 @@ export function getAllServers() {
 }
 
 export function createChannel({ server_id, name, type }: { server_id: number; name: string; type: string }) {
-    try {
-        const stmt = db.prepare(
-            "INSERT INTO Channels (server_id, name, type, created_at) VALUES (?, ?, ?, datetime('now'))",
-        );
-        const info = stmt.run(server_id, name, type);
-        return { id: info.lastInsertRowid, server_id, name, type };
-    } catch (err: any) {
-        throw err;
-    }
+    const stmt = db.prepare(
+        "INSERT INTO Channels (server_id, name, type, created_at) VALUES (?, ?, ?, datetime('now'))",
+    );
+    const info = stmt.run(server_id, name, type);
+    return { id: info.lastInsertRowid, server_id, name, type };
 }
 
 export function getChannelsFromServer(serverId: number) {
@@ -109,15 +106,11 @@ export function getChannelsFromServer(serverId: number) {
 }
 
 export function storeRefreshToken({ user_id, token }: { user_id: number; token: string }) {
-    try {
-        const stmt = db.prepare(
-            "INSERT INTO RefreshTokens (user_id, token, expires_at, created_at) VALUES (?, ?, ?, datetime('now'))",
-        );
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-        stmt.run(user_id, token, expiresAt);
-    } catch (err: any) {
-        throw err;
-    }
+    const stmt = db.prepare(
+        "INSERT INTO RefreshTokens (user_id, token, expires_at, created_at) VALUES (?, ?, ?, datetime('now'))",
+    );
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    stmt.run(user_id, token, expiresAt);
 }
 
 export function getRefreshToken(token: string) {
@@ -140,14 +133,8 @@ export function getUsernameById(userId: number) {
 }
 
 export function addServerMember({ server_id, user_id }: { server_id: number | bigint; user_id: number }) {
-    try {
-        const stmt = db.prepare(
-            "INSERT INTO ServerMembers (server_id, user_id, joined_at) VALUES (?, ?, datetime('now'))",
-        );
-        stmt.run(server_id, user_id);
-    } catch (err: any) {
-        throw err;
-    }
+    const stmt = db.prepare("INSERT INTO ServerMembers (server_id, user_id, joined_at) VALUES (?, ?, datetime('now'))");
+    stmt.run(server_id, user_id);
 }
 
 export function getServerUserIsMemberOf(user_id: number): Server[] {
@@ -172,33 +159,29 @@ export function createServerInvite({
     expires_at?: string;
     temporary?: boolean;
 }) {
-    try {
-        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const stmt = db.prepare(
-            "INSERT INTO ServerInvites (code, server_id, channel_id, creator_id, max_uses, expires_at, temporary, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
-        );
-        const info = stmt.run(
-            code,
-            server_id,
-            channel_id || null,
-            creator_id,
-            max_uses || null,
-            expires_at || null,
-            temporary ? 1 : 0,
-        );
-        return {
-            id: info.lastInsertRowid,
-            code,
-            server_id,
-            channel_id: channel_id || null,
-            creator_id,
-            max_uses: max_uses || null,
-            expires_at: expires_at || null,
-            temporary: temporary ? 1 : 0,
-        };
-    } catch (err: any) {
-        throw err;
-    }
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const stmt = db.prepare(
+        "INSERT INTO ServerInvites (code, server_id, channel_id, creator_id, max_uses, expires_at, temporary, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+    );
+    const info = stmt.run(
+        code,
+        server_id,
+        channel_id || null,
+        creator_id,
+        max_uses || null,
+        expires_at || null,
+        temporary ? 1 : 0,
+    );
+    return {
+        id: info.lastInsertRowid,
+        code,
+        server_id,
+        channel_id: channel_id || null,
+        creator_id,
+        max_uses: max_uses || null,
+        expires_at: expires_at || null,
+        temporary: temporary ? 1 : 0,
+    };
 }
 
 export function getServerInviteByCode(code: string) {
@@ -224,19 +207,19 @@ export function getServerInviteByCode(code: string) {
 export function joinServerWithInvite(inviteCode: string, user_id: number) {
     const invite = getServerInviteByCode(inviteCode);
     if (!invite) {
-        throw new Error('Invalid invite code');
+        throw new HttpError('Invalid invite code', 400);
     }
     if (invite.revoked) {
-        throw new Error('Invite has been revoked');
+        throw new HttpError('Invite has been revoked', 400);
     }
     if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-        throw new Error('Invite has expired');
+        throw new HttpError('Invite has expired', 400);
     }
     if (invite.max_uses && invite.uses >= invite.max_uses) {
-        throw new Error('Invite has reached its maximum uses');
+        throw new HttpError('Invite has reached its maximum uses', 400);
     }
     if (getServerUserIsMemberOf(user_id).find((s) => s.id === invite.server_id)) {
-        throw new Error('You are already a member of this server');
+        throw new HttpError('You are already a member of this server', 400);
     }
 
     addServerMember({ server_id: invite.server_id, user_id });

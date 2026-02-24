@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import config from '../config.js';
+import { HttpError } from '../utils/errors.js';
 
 export interface AuthRequest extends Request {
     user?: any;
@@ -17,6 +18,9 @@ export function jwtAuthMiddleware(req: AuthRequest, res: Response, next: NextFun
         req.user = decoded;
         next();
     } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         res.status(401).json({ error: 'Invalid token' });
     }
 }

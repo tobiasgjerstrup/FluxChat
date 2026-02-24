@@ -24,8 +24,8 @@ export function setupWebSocket(server: HttpServer) {
             let message;
             try {
                 message = JSON.parse(data.toString());
-            } catch (e) {
-                console.error('Invalid JSON from client', e);
+            } catch (err) {
+                console.error('Invalid JSON from client', err);
                 return;
             }
 

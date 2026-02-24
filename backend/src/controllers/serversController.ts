@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { HttpError } from '../utils/errors.js';
 import {
     addServerMember,
     createServer,
@@ -22,6 +23,9 @@ export async function getServers(req: Request, res: Response) {
         const servers = getServerUserIsMemberOf(owner_id);
         res.json(servers);
     } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         console.error(err);
         res.status(500).json({ error: 'Failed to fetch servers' });
     }
@@ -40,9 +44,9 @@ export async function postServer(req: Request, res: Response) {
         addServerMember({ server_id: server.id, user_id: owner_id });
         broadcastMessage({ ...server, owner_id });
         res.status(201).json(server);
-    } catch (err: any) {
-        if (err.message === 'Server name already exists') {
-            return res.status(400).json({ error: err.message });
+    } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
         }
         console.error(err);
         res.status(500).json({ error: 'Failed to create server' });
@@ -69,7 +73,10 @@ export async function postServerInvite(req: Request, res: Response) {
             invite_code: inviteRes.code,
             invite_link: `${config.frontendUrl}/invite/${inviteRes.code}`,
         });
-    } catch (err: any) {
+    } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         console.error(err);
         res.status(500).json({ error: 'Failed to create server invite' });
     }
@@ -85,7 +92,10 @@ export async function joinServer(req: Request, res: Response) {
 
         joinServerWithInvite(code, user_id);
         res.status(200).json({ message: 'Successfully joined server' });
-    } catch (err: any) {
+    } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         console.error(err);
         res.status(500).json({ error: 'Failed to join server with invite' });
     }
