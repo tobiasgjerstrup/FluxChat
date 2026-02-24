@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getMessagesFromChannel, getUsernameById, saveMessage } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
+import { HttpError } from '../utils/errors.js';
 // Extend Request type to include user property
 interface AuthRequest extends Request {
     user?: any;
@@ -15,6 +16,9 @@ export async function getMessages(req: Request, res: Response) {
         const messages = await getMessagesFromChannel(Number(channelId));
         res.json(messages);
     } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         console.error(err);
         res.status(500).json({ error: 'Failed to fetch messages' });
     }
@@ -30,6 +34,9 @@ export async function postMessage(req: Request, res: Response) {
         broadcastMessage({ ...message, author_id, author_username });
         res.status(201).json(message);
     } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         console.error(err);
         res.status(500).json({ error: 'Failed to save message' });
     }

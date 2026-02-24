@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import config from '../config.js';
 import { createUser, findUserByUsername, getRefreshToken, storeRefreshToken } from '../services/db.js';
 import bcrypt from 'bcrypt';
+import { HttpError } from '../utils/errors.js';
 
 const router = Router();
 
@@ -15,9 +16,9 @@ router.post('/register', async (req, res) => {
     try {
         const user = await createUser({ username, email, password });
         return res.status(201).json({ id: user.id, username: user.username, email: user.email });
-    } catch (err: any) {
-        if (err.message === 'Username or email already exists') {
-            return res.status(409).json({ error: 'Username or email already exists' });
+    } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
         }
         console.log(err);
         return res.status(500).json({ error: 'Registration failed' });
@@ -75,12 +76,18 @@ router.post('/refresh', (req, res) => {
             return res.status(401).json({ error: 'Invalid token type' });
         }
     } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         return res.status(401).json({ error: 'Invalid token' });
     }
 
     try {
         jwt.verify(refreshToken, config.jwtRefreshSecret);
     } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         return res.status(401).json({ error: 'Invalid or expired refresh token' });
     }
 

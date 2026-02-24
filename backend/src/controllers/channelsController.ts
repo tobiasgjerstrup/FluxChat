@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { createChannel, getChannelsFromServer } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
+import { HttpError } from '../utils/errors.js';
 // Extend Request type to include user property
 interface AuthRequest extends Request {
     user?: any;
@@ -15,6 +16,9 @@ export async function getChannels(req: Request, res: Response) {
         const channels = getChannelsFromServer(Number(serverId));
         res.json(channels);
     } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         console.error(err);
         res.status(500).json({ error: 'Failed to fetch channels' });
     }
@@ -31,6 +35,9 @@ export async function postChannel(req: Request, res: Response) {
         broadcastMessage({ ...channel, owner_id });
         res.status(201).json(channel);
     } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ error: err.message });
+        }
         console.error(err);
         res.status(500).json({ error: 'Failed to create channel' });
     }
