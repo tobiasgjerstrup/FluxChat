@@ -230,3 +230,96 @@ export function incrementInviteUses(inviteId: number) {
     const stmt = db.prepare('UPDATE ServerInvites SET uses = uses + 1 WHERE id = ?');
     stmt.run(inviteId);
 }
+
+export function getUsers() {
+    const stmt = db.prepare('SELECT id, username FROM Users ORDER BY created_at ASC');
+    return stmt.all() as { id: number | bigint; username: string }[];
+}
+
+// Helper: Find DMChannel by exact participant set
+function findDMChannelByParticipants(userIds: number[]): bigint | number | null {
+    const sortedUserIds = [...userIds].map(Number).sort((a, b) => a - b);
+    const channels = db
+        .prepare(
+            `
+            SELECT dm_channel_id FROM DMParticipants
+            WHERE user_id IN (${userIds.map(() => '?').join(',')})
+            GROUP BY dm_channel_id
+            HAVING COUNT(*) = ?`,
+        )
+        .all(...userIds, userIds.length) as { dm_channel_id: number | bigint }[];
+    for (const row of channels) {
+        const participants = db
+            .prepare('SELECT user_id FROM DMParticipants WHERE dm_channel_id = ?')
+            .all(row.dm_channel_id) as { user_id: number | bigint }[];
+        const ids = participants.map((p) => Number(p.user_id)).sort((a, b) => a - b);
+        if (ids.length === sortedUserIds.length && ids.every((id, i) => id === sortedUserIds[i])) {
+            return row.dm_channel_id;
+        }
+    }
+    return null;
+}
+
+export function sendDirectMessage({
+    author_id,
+    participant_ids,
+    content,
+}: {
+    author_id: number;
+    participant_ids: number[];
+    content: string;
+}) {
+    // Find or create DMChannel
+    let dm_channel_id = findDMChannelByParticipants(participant_ids);
+    if (!dm_channel_id) {
+        const stmt = db.prepare("INSERT INTO DMChannels (is_group, created_at) VALUES (?, datetime('now'))");
+        const info = stmt.run(participant_ids.length > 2 ? 1 : 0);
+        dm_channel_id = info.lastInsertRowid as number | bigint;
+        // Add participants
+        const addStmt = db.prepare('INSERT INTO DMParticipants (dm_channel_id, user_id) VALUES (?, ?)');
+        for (const user_id of participant_ids) {
+            addStmt.run(dm_channel_id, user_id);
+        }
+    }
+    // Insert message
+    const msgStmt = db.prepare(
+        "INSERT INTO DMMessages (dm_channel_id, author_id, content, created_at) VALUES (?, ?, ?, datetime('now'))",
+    );
+    const info = msgStmt.run(dm_channel_id, author_id, content);
+    return {
+        id: info.lastInsertRowid as number | bigint,
+        dm_channel_id,
+        author_id,
+        content,
+        created_at: new Date().toISOString(),
+    };
+}
+
+export function getMessagesForDMChannel(dm_channel_id: number | bigint) {
+    const stmt = db.prepare(`
+        SELECT m.*, u.username AS author_username
+        FROM DMMessages m
+        JOIN Users u ON m.author_id = u.id
+        WHERE m.dm_channel_id = ?
+        ORDER BY m.created_at ASC
+    `);
+    return stmt.all(dm_channel_id) as {
+        id: number | bigint;
+        dm_channel_id: number | bigint;
+        author_id: number | bigint;
+        content: string;
+        created_at: string;
+        author_username: string;
+    }[];
+}
+
+export function getParticipantsForDMChannel(dm_channel_id: number | bigint) {
+    const stmt = db.prepare(`
+        SELECT u.id, u.username
+        FROM DMParticipants p
+        JOIN Users u ON p.user_id = u.id
+        WHERE p.dm_channel_id = ?
+        ORDER BY u.username ASC
+    `);
+    return stmt.all(dm_channel_id) as { id: number | bigint; username: string }[];
+}

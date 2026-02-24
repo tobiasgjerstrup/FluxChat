@@ -7,6 +7,7 @@ import messageRoutes from './routes/messages.js';
 import authRoutes from './routes/auth.js';
 import serverRoutes from './routes/servers.js';
 import channelRoutes from './routes/channels.js';
+import userRoutes from './routes/users.js';
 import { jwtAuthMiddleware } from './middleware/auth.js';
 import { setupWebSocket } from './ws/chat.js';
 
@@ -31,6 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/servers', serverRoutes);
 app.use('/api/channels', channelRoutes);
+app.use('/api/users', userRoutes);
 
 import type { Request, Response } from 'express';
 import config from './config.js';

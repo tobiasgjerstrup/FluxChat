@@ -1,0 +1,26 @@
+meta {
+  name: Post DM
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{URL}}/api/users/message/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "content": "Hello user!"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -162,6 +162,9 @@ export async function sqliteDBSetup() {
             FOREIGN KEY (author_id) REFERENCES Users(id)
         );`,
     ).run();
+    /* db.prepare(`DELETE FROM DMMessages`).run();
+    db.prepare(`DELETE FROM DMParticipants`).run();
+    db.prepare(`DELETE FROM DMChannels`).run(); */
 
     db.prepare(
         `CREATE TABLE IF NOT EXISTS UserStatus (
