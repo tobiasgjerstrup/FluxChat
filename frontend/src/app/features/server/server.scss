@@ -1,4 +1,4 @@
-@import '../../../_mixins.scss';
+@use '../../../_mixins.scss';
 
 .server-layout {
     display: flex;
@@ -10,7 +10,7 @@
     padding: 16px;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
     overflow-y: auto;
-    background: $bg-secondary;
+    background: mixins.$bg-secondary;
 }
 
 .channel-content {
@@ -29,5 +29,5 @@
 }
 
 .channel-card:hover {
-    background: $bg-secondary-hover;
+    background: mixins.$bg-secondary-hover;
 }

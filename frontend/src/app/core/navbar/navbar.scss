@@ -1,11 +1,11 @@
-@import '../../../mixins';
+@use '../../../mixins';
 
 .navbar {
     display: flex;
     gap: 1rem;
-    background: $bg-secondary;
+    background: mixins.$bg-secondary;
     padding: 0.5rem 1rem;
-    border-bottom: 1px solid $bg-secondary-hover;
+    border-bottom: 1px solid mixins.$bg-secondary-hover;
 }
 
 .nav-btn {
@@ -14,7 +14,7 @@
     gap: 0.5rem;
     background: none;
     border: none;
-    color: $text;
+    color: mixins.$text;
     font-size: 1rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
@@ -23,5 +23,5 @@
 }
 
 .nav-btn:hover {
-    background: $bg-secondary-hover;
+    background: mixins.$bg-secondary-hover;
 }

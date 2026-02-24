@@ -1,8 +1,8 @@
-@import './mixins';
+@use 'mixins';
 
 // Always dark mode globally
 body,
 html {
-    background: $bg;
-    color: $text;
+    background: mixins.$bg;
+    color: mixins.$text;
 }
