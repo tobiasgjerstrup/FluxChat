@@ -1,8 +1,46 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'mixins';
 
 // Always dark mode globally
 body,
 html {
-    background: #181818;
-    color: #f5f5f5;
+    background: mixins.$bg;
+    color: mixins.$text;
+}
+
+// Inputs
+.input-container {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid mixins.$border;
+    background: mixins.$bg;
+}
+.input {
+    flex: 1 1 auto;
+    padding: 8px 12px;
+    border: 1px solid mixins.$border;
+    border-radius: 4px;
+    font-size: 1rem;
+    margin-right: 8px;
+    background: mixins.$bg-alt;
+    color: mixins.$text;
+    outline: none;
+    transition: border 0.2s;
+}
+.input:focus {
+    border-color: mixins.$primary;
+}
+
+// Buttons
+.button {
+    padding: 8px 18px;
+    background: mixins.$primary;
+    color: mixins.$text;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.button:hover {
+    background: mixins.$primary-hover;
 }

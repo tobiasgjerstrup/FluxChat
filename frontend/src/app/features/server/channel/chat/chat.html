@@ -7,8 +7,8 @@
             </div>
         }
     </div>
-    <form class="chat-input-container" (ngSubmit)="sendMessage()">
-        <input type="text" [(ngModel)]="newMessage" name="message" class="chat-input" placeholder="Type your message..." autocomplete="off" required />
-        <button type="submit" class="send-button">Send</button>
+    <form class="input-container" (ngSubmit)="sendMessage()">
+        <input type="text" [(ngModel)]="newMessage" name="message" class="input" placeholder="Type your message..." autocomplete="off" required />
+        <button type="submit" class="button">Send</button>
     </form>
 </div>

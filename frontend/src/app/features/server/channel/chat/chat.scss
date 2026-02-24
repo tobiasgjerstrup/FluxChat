@@ -1,21 +1,15 @@
-$bg-dark: #181818;
-$bg-dark-alt: #232323;
-$border-dark: #282828;
-$text-light: #f5f5f5;
-$text-secondary: #bdbdbd;
-$primary: #1976d2;
-$primary-hover: #1565c0;
+@use '../../../../../mixins';
 
 .chat-container {
     display: flex;
     flex-direction: column;
     /* Remove height: 100% and set a more reasonable max-height */
     max-height: 85vh;
-    border: 1px solid $border-dark;
+    border: 1px solid mixins.$border;
     border-radius: 8px;
-    background: $bg-dark-alt;
+    background: mixins.$bg-alt;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-    color: $text-light;
+    color: mixins.$text;
 }
 
 .chat-history {
@@ -29,53 +23,16 @@ $primary-hover: #1565c0;
 
 .chat-message {
     padding: 8px 12px;
-    background: $bg-dark;
+    background: mixins.$bg;
     border-radius: 6px;
     max-width: 70%;
     align-self: flex-start;
-    color: $text-light;
-    border: 1px solid $border-dark;
+    color: mixins.$text;
+    border: 1px solid mixins.$border;
 }
 
 .chat-user {
     font-weight: bold;
     margin-right: 6px;
-    color: $primary;
-}
-
-.chat-input-container {
-    display: flex;
-    padding: 12px;
-    border-top: 1px solid $border-dark;
-    background: $bg-dark;
-}
-
-.chat-input {
-    flex: 1 1 auto;
-    padding: 8px 12px;
-    border: 1px solid $border-dark;
-    border-radius: 4px;
-    font-size: 1rem;
-    margin-right: 8px;
-    background: $bg-dark-alt;
-    color: $text-light;
-    outline: none;
-    transition: border 0.2s;
-}
-.chat-input:focus {
-    border-color: $primary;
-}
-
-.send-button {
-    padding: 8px 18px;
-    background: $primary;
-    color: $text-light;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.send-button:hover {
-    background: $primary-hover;
+    color: mixins.$primary;
 }

@@ -1,12 +1,12 @@
 @if (invite().invite_code && invite().invite_link) {
     <p>
         Invite code: {{ invite().invite_code }}
-        <button type="button" class="send-button" (click)="copyToClipboard(invite().invite_code)">Copy</button>
+        <button type="button" class="button" (click)="copyToClipboard(invite().invite_code)">Copy</button>
     </p>
     <p>
         Invite link: {{ invite().invite_link }}
-        <button type="button" class="send-button" (click)="copyToClipboard(invite().invite_link)">Copy</button>
+        <button type="button" class="button" (click)="copyToClipboard(invite().invite_link)">Copy</button>
     </p>
 } @else {
-    <button (click)="createServerInvite()" type="submit" class="send-button">Create Server Invite</button>
+    <button (click)="createServerInvite()" type="submit" class="button">Create Server Invite</button>
 }
