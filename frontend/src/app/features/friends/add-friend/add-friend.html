@@ -1,1 +1,6 @@
-<p>add-friend works!</p>
+@for (user of users(); track $index) {
+    <div class="user">
+        <button class="button" (click)="addFriend(user.id)">Add</button>
+        {{ user.username }}
+    </div>
+}
