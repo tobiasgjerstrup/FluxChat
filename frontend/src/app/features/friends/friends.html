@@ -1,0 +1,6 @@
+<button class="button" (click)="showAddFriendModal = true">Add friends!</button>
+@if (showAddFriendModal) {
+    <app-modal (closed)="closeAddFriendModal()">
+        <app-add-friend></app-add-friend>
+    </app-modal>
+}

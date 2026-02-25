@@ -23,4 +23,8 @@ export const routes: Routes = [
         path: 'invite/:inviteCode',
         loadComponent: () => import('./features/server/use-invite/use-invite').then((m) => m.UseInvite),
     },
+    {
+        path: 'friends',
+        loadComponent: () => import('./features/friends/friends').then((m) => m.Friends),
+    },
 ];
