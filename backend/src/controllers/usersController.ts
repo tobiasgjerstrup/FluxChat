@@ -1,6 +1,15 @@
 import { Request, Response } from 'express';
-import { getMessagesForDMChannel, getUsers, sendDirectMessage, getParticipantsForDMChannel } from '../services/db.js';
+import {
+    getMessagesForDMChannel,
+    getUsers,
+    sendDirectMessage,
+    getParticipantsForDMChannel,
+    userBlock,
+    userAccept,
+    userAdd,
+} from '../services/db.js';
 import { AuthRequest } from '../middleware/auth.js';
+import { HttpError } from '../utils/errors.js';
 
 export function getDMParticipants(req: Request, res: Response) {
     try {
@@ -56,5 +65,48 @@ export function postDirectMessage(req: Request, res: Response) {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Failed to send message' });
+    }
+}
+
+export function respondToFriendRequest(req: Request, res: Response) {
+    const { userId, action } = req.body;
+    if (!userId || typeof userId !== 'number') {
+        return res.status(400).json({ message: 'User ID is required and must be a number' });
+    }
+    if (!action || (action !== 'accept' && action !== 'block')) {
+        return res.status(400).json({ message: 'Action is required and must be either "accept" or "block"' });
+    }
+
+    try {
+        if (action === 'accept') {
+            userAccept((req as AuthRequest).user.id, userId);
+            // TODO: change block to decline instead.
+        } /* else if (action === 'block') {
+            userBlock((req as AuthRequest).user.id, userId);
+        } */
+        res.status(201).json({ message: 'Friend request responded' });
+    } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ message: err.message });
+        }
+        console.error(err);
+        res.status(500).json({ message: 'Failed to respond to friend request' });
+    }
+}
+
+export function sendFriendRequest(req: Request, res: Response) {
+    const { userId } = req.body;
+    if (!userId || typeof userId !== 'number') {
+        return res.status(400).json({ message: 'User ID is required and must be a number' });
+    }
+    try {
+        userAdd((req as AuthRequest).user.id, userId);
+        res.status(201).json({ message: 'Friend request sent' });
+    } catch (err) {
+        if (err instanceof HttpError) {
+            return res.status(err.httpCode).json({ message: err.message });
+        }
+        console.error(err);
+        res.status(500).json({ message: 'Failed to send friend request' });
     }
 }

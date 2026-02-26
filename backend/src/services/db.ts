@@ -323,3 +323,61 @@ export function getParticipantsForDMChannel(dm_channel_id: number | bigint) {
     `);
     return stmt.all(dm_channel_id) as { id: number | bigint; username: string }[];
 }
+
+export function userAdd(user_id: number, friend_id: number) {
+    const isSent = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
+        .get(user_id, friend_id);
+    if (isSent) {
+        throw new HttpError('Friend request already sent', 400);
+    }
+    const isAlreadyFriend = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'accepted'")
+        .get(user_id, friend_id);
+    if (isAlreadyFriend) {
+        throw new HttpError('You are already friends', 400);
+    }
+    const isBlocked = db
+        .prepare(
+            "SELECT 1 FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status = 'blocked'",
+        )
+        .get(user_id, friend_id, friend_id, user_id);
+    if (isBlocked) {
+        throw new HttpError('Cannot send friend request', 400);
+    }
+    const isReceived = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
+        .get(friend_id, user_id);
+    if (isReceived) {
+        userAccept(friend_id, user_id);
+        return;
+    }
+    const stmt = db.prepare(
+        "INSERT INTO friends (user_id, friend_id, status, created_at, updated_at) VALUES (?, ?, 'pending', datetime('now'), datetime('now'))",
+    );
+    stmt.run(user_id, friend_id);
+}
+
+export function userBlock(user_id: number, friend_id: number) {
+    const deleteStmt = db.prepare(
+        "DELETE FROM friends WHERE status != 'blocked' AND ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))",
+    );
+    deleteStmt.run(user_id, friend_id, friend_id, user_id);
+
+    const stmt = db.prepare(
+        "INSERT INTO friends (user_id, friend_id, status, created_at, updated_at) VALUES (?, ?, 'blocked', datetime('now'), datetime('now'))",
+    );
+    stmt.run(user_id, friend_id);
+}
+
+export function userAccept(user_id: number, friend_id: number) {
+    const stmt = db.prepare(
+        "UPDATE friends SET status = 'accepted', updated_at = datetime('now') WHERE user_id = ? AND friend_id = ? AND status = 'pending'",
+    );
+    stmt.run(friend_id, user_id);
+
+    const reciprocalStmt = db.prepare(
+        "INSERT INTO friends (user_id, friend_id, status, created_at, updated_at) VALUES (?, ?, 'accepted', datetime('now'), datetime('now'))",
+    );
+    reciprocalStmt.run(user_id, friend_id);
+}
