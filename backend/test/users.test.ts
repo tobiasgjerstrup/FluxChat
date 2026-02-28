@@ -13,7 +13,7 @@ describe('Users API', () => {
 describe('Friend Requests', () => {
     const userA = { username: testUser.username + 'A', password: testUser.password, email: testUser.email + 'A' };
     const userB = { username: testUser.username + 'B', password: testUser.password, email: testUser.email + 'B' };
-    let tokenA: string, tokenB: string, userIdA: number, userIdB: number, requestId: number;
+    let tokenA: string, tokenB: string, userIdA: number, userIdB: number;
 
     it('should register and login two users', async () => {
         // Register A

@@ -11,7 +11,7 @@ import { broadcastMessage } from '../ws/chat.js';
 import config from '../config.js';
 // Extend Request type to include user property
 interface AuthRequest extends Request {
-    user?: any;
+    user?: { id: number };
 }
 
 export async function getServers(req: Request, res: Response) {

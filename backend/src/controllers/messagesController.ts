@@ -4,7 +4,7 @@ import { broadcastMessage } from '../ws/chat.js';
 import { HttpError } from '../utils/errors.js';
 // Extend Request type to include user property
 interface AuthRequest extends Request {
-    user?: any;
+    user?: { id: number };
 }
 
 export async function getMessages(req: Request, res: Response) {

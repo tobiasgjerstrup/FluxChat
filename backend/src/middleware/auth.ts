@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config.js';
 import { HttpError } from '../utils/errors.js';
 
 export interface AuthRequest extends Request {
-    user?: any;
+    user?: string | JwtPayload;
 }
 
 export function jwtAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
