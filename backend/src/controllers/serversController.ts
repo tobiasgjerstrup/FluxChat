@@ -13,7 +13,7 @@ import { AuthRequest } from '../types/user.js';
 
 export async function getServers(req: Request, res: Response) {
     try {
-        const owner_id = (req as AuthRequest).user?.id || null;
+        const owner_id = (req as AuthRequest).user?.id;
         if (typeof owner_id !== 'number')
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
@@ -33,7 +33,7 @@ export async function postServer(req: Request, res: Response) {
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
 
-        const owner_id = (req as AuthRequest).user?.id || null;
+        const owner_id = (req as AuthRequest).user?.id;
         if (typeof owner_id !== 'number')
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
@@ -56,7 +56,7 @@ export async function postServerInvite(req: Request, res: Response) {
         if (typeof server_id !== 'number')
             return res.status(400).json({ error: 'Server ID is required and must be a number' });
 
-        const creator_id = (req as AuthRequest).user?.id || null;
+        const creator_id = (req as AuthRequest).user?.id;
         if (typeof creator_id !== 'number')
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
@@ -84,7 +84,7 @@ export async function joinServer(req: Request, res: Response) {
         const code = req.params.code;
         if (typeof code !== 'string') return res.status(400).json({ error: 'Invite code is required' });
 
-        const user_id = (req as AuthRequest).user?.id || null;
+        const user_id = (req as AuthRequest).user?.id;
         if (typeof user_id !== 'number') return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
         joinServerWithInvite(code, user_id);

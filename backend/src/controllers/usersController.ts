@@ -104,16 +104,16 @@ export function respondToFriendRequest(req: Request, res: Response) {
 }
 
 export function sendFriendRequest(req: Request, res: Response) {
+    const userIdToAdd = (req as AuthRequest).user?.id;
     const { userId } = req.body;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
     }
-    if (userId === (req as AuthRequest).user?.id) {
+    if (userId === userIdToAdd) {
         return res.status(400).json({ message: 'You cannot send a friend request to yourself' });
     }
 
     try {
-        const userIdToAdd = (req as AuthRequest).user?.id;
         if (typeof userIdToAdd !== 'number') {
             return res.status(500).json({ message: 'Something went wrong getting user ID' });
         }
@@ -130,15 +130,15 @@ export function sendFriendRequest(req: Request, res: Response) {
 
 export function removeFriend(req: Request, res: Response) {
     const { userId } = req.body;
+    const userIdToRemove = (req as AuthRequest).user?.id;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
     }
-    if (userId === (req as AuthRequest).user?.id) {
+    if (userId === userIdToRemove) {
         return res.status(400).json({ message: 'You cannot remove yourself from friends' });
     }
 
     try {
-        const userIdToRemove = (req as AuthRequest).user?.id;
         if (typeof userIdToRemove !== 'number') {
             return res.status(500).json({ message: 'Something went wrong getting user ID' });
         }
