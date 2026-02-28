@@ -269,6 +269,14 @@ export function sendDirectMessage({
     participant_ids: number[];
     content: string;
 }) {
+    if (participant_ids.length < 2) {
+        throw new HttpError('At least 2 participants are required for a DM', 400);
+    }
+
+    if (!participant_ids.includes(author_id)) {
+        throw new HttpError('Author must be included in participant IDs', 400);
+    }
+
     // Find or create DMChannel
     let dm_channel_id = findDMChannelByParticipants(participant_ids);
     if (!dm_channel_id) {
@@ -359,6 +367,16 @@ export function userAdd(user_id: number, friend_id: number) {
 }
 
 export function userBlock(user_id: number, friend_id: number) {
+    const isBlocked = db
+        .prepare(
+            "SELECT 1 FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status = 'blocked'",
+        )
+        .get(user_id, friend_id, friend_id, user_id);
+
+    if (isBlocked) {
+        throw new HttpError('User is already blocked', 400);
+    }
+
     const deleteStmt = db.prepare(
         "DELETE FROM friends WHERE status != 'blocked' AND ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))",
     );
@@ -371,6 +389,12 @@ export function userBlock(user_id: number, friend_id: number) {
 }
 
 export function userAccept(user_id: number, friend_id: number) {
+    const isReceived = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
+        .get(friend_id, user_id);
+    if (!isReceived) {
+        throw new HttpError('No friend request to accept', 400);
+    }
     const stmt = db.prepare(
         "UPDATE friends SET status = 'accepted', updated_at = datetime('now') WHERE user_id = ? AND friend_id = ? AND status = 'pending'",
     );
@@ -380,4 +404,28 @@ export function userAccept(user_id: number, friend_id: number) {
         "INSERT INTO friends (user_id, friend_id, status, created_at, updated_at) VALUES (?, ?, 'accepted', datetime('now'), datetime('now'))",
     );
     reciprocalStmt.run(user_id, friend_id);
+}
+
+export function userReject(user_id: number, friend_id: number) {
+    const isReceived = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
+        .get(friend_id, user_id);
+    if (!isReceived) {
+        throw new HttpError('No friend request to reject', 400);
+    }
+    const stmt = db.prepare("DELETE FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'");
+    stmt.run(friend_id, user_id);
+}
+
+export function userRemove(user_id: number, friend_id: number) {
+    const isFriend = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'accepted'")
+        .get(user_id, friend_id);
+    if (!isFriend) {
+        throw new HttpError('You are not friends', 400);
+    }
+    const stmt = db.prepare(
+        'DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)',
+    );
+    stmt.run(user_id, friend_id, friend_id, user_id);
 }

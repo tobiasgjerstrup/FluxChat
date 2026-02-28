@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { Api } from '../../../core/api';
 
 @Component({
@@ -7,7 +7,7 @@ import { Api } from '../../../core/api';
     templateUrl: './add-friend.html',
     styleUrl: './add-friend.scss',
 })
-export class AddFriend {
+export class AddFriend implements OnInit {
     constructor(private api: Api) {}
 
     public users = signal<{ id: number; username: string }[]>([]);

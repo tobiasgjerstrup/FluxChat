@@ -6,6 +6,7 @@ import {
     postDirectMessage,
     sendFriendRequest,
     respondToFriendRequest,
+    removeFriend,
 } from '../controllers/usersController.js';
 
 const router = Router();
@@ -20,5 +21,6 @@ router.post('/message/:userId', jwtAuthMiddleware, postDirectMessage);
 // router.get('/friends', jwtAuthMiddleware, getAllFriends);
 router.post('/friends/send', jwtAuthMiddleware, sendFriendRequest);
 router.post('/friends/respond', jwtAuthMiddleware, respondToFriendRequest);
+router.post('/friends/remove', jwtAuthMiddleware, removeFriend);
 
 export default router;

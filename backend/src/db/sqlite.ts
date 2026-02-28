@@ -266,10 +266,18 @@ export async function sqliteDBSetup() {
                 created_at DATETIME NOT NULL,
                 updated_at DATETIME,
                 FOREIGN KEY (user_id) REFERENCES Users(id),
-                FOREIGN KEY (friend_id) REFERENCES Users(id)
+                FOREIGN KEY (friend_id) REFERENCES Users(id),
+                UNIQUE(user_id, friend_id)
             );`,
     ).run();
 
     db.prepare(`DELETE FROM RefreshTokens WHERE expires_at < datetime('now')`).run();
     return db;
+}
+
+export function closeDB() {
+    if (db) {
+        db.close();
+        db = null;
+    }
 }
