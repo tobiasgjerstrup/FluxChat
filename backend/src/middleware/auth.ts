@@ -1,11 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import config from '../config.js';
 import { HttpError } from '../utils/errors.js';
-
-export interface AuthRequest extends Request {
-    user?: any;
-}
+import { AuthRequest } from '../types/user.js';
 
 export function jwtAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
     const authHeader = req.headers['authorization'];
@@ -15,7 +12,7 @@ export function jwtAuthMiddleware(req: AuthRequest, res: Response, next: NextFun
     try {
         const secret = config.jwtSecret;
         const decoded = jwt.verify(token, secret);
-        req.user = decoded;
+        req.user = { id: (decoded as { id: number }).id };
         next();
     } catch (err) {
         if (err instanceof HttpError) {

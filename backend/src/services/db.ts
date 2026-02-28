@@ -31,7 +31,7 @@ export function saveMessage({
     channel_id,
 }: {
     content: string;
-    author_id: string;
+    author_id: number;
     channel_id: number;
 }) {
     const stmt = db.prepare(

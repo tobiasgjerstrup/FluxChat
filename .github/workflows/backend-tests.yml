@@ -17,7 +17,7 @@ jobs:
             - name: Set up Node
               uses: actions/setup-node@v4
               with:
-                  node-version: 18
+                  node-version: 24
 
             - name: Install dependencies
               working-directory: backend
@@ -26,3 +26,7 @@ jobs:
             - name: Run tests
               working-directory: backend
               run: npm test
+
+            - name: Lint backend
+              working-directory: backend
+              run: npx eslint . --max-warnings=0

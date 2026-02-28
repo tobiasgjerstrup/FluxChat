@@ -98,7 +98,7 @@ function isValidIP(ip: string): boolean {
     return ipv4.test(ip) || ipv6.test(ip);
 }
 
-function isStringValue(value: any): boolean {
+function isStringValue(value: unknown): boolean {
     const msRegex = /^\d+(\.\d+)?\s*(ms|s|m|h|d|w|y)?$/i;
     return typeof value === 'string' && msRegex.test(value);
 }

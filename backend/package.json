@@ -9,9 +9,11 @@
     "scripts": {
         "start": "npx tsx --watch src/main.ts",
         "build": "tsgo",
-        "test": "vitest --ui"
+        "test": "vitest --ui",
+        "lint": "npx eslint . --max-warnings=0"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@types/bcrypt": "^6.0.0",
         "@types/better-sqlite3": "^7.6.13",
         "@types/cors": "^2.8.19",
@@ -21,8 +23,12 @@
         "@types/supertest": "^7.2.0",
         "@types/ws": "^8.18.1",
         "@vitest/ui": "^4.0.18",
+        "eslint": "^10.0.2",
+        "globals": "^17.3.0",
+        "jiti": "^2.6.1",
         "supertest": "^7.2.2",
         "typescript": "^5.9.3",
+        "typescript-eslint": "^8.56.1",
         "vitest": "^4.0.18"
     },
     "dependencies": {

@@ -7,7 +7,7 @@ import authRoutes from './routes/auth.js';
 import serverRoutes from './routes/servers.js';
 import channelRoutes from './routes/channels.js';
 import userRoutes from './routes/users.js';
-import { jwtAuthMiddleware } from './middleware/auth.js';
+// import { jwtAuthMiddleware } from './middleware/auth.js';
 import { setupWebSocket } from './ws/chat.js';
 
 const app = express();
