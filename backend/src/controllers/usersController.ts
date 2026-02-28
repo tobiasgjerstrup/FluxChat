@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import {
     getMessagesForDMChannel,
     getUsers,
@@ -12,7 +12,7 @@ import {
 import { AuthRequest } from '../types/user.js';
 import { HttpError } from '../utils/errors.js';
 
-export function getDMParticipants(req: Request, res: Response) {
+export function getDMParticipants(req: AuthRequest, res: Response) {
     try {
         if (typeof req.params.channelId !== 'string' || isNaN(parseInt(req.params.channelId))) {
             return res.status(400).json({ message: 'Channel ID must be a number' });
@@ -25,7 +25,7 @@ export function getDMParticipants(req: Request, res: Response) {
     }
 }
 
-export function getAllUsers(req: Request, res: Response) {
+export function getAllUsers(req: AuthRequest, res: Response) {
     try {
         const users = getUsers();
         res.status(200).json({ message: 'Successfully fetched users', users });
@@ -35,7 +35,7 @@ export function getAllUsers(req: Request, res: Response) {
     }
 }
 
-export function getDirectMessage(req: Request, res: Response) {
+export function getDirectMessage(req: AuthRequest, res: Response) {
     try {
         if (typeof req.params.channelId !== 'string' || isNaN(parseInt(req.params.channelId))) {
             return res.status(400).json({ message: 'Channel ID must be a number' });
@@ -48,7 +48,7 @@ export function getDirectMessage(req: Request, res: Response) {
     }
 }
 
-export function postDirectMessage(req: Request, res: Response) {
+export function postDirectMessage(req: AuthRequest, res: Response) {
     try {
         if (!req.body.content || typeof req.body.content !== 'string') {
             return res.status(400).json({ message: 'Content is required and must be a string' });
@@ -57,7 +57,7 @@ export function postDirectMessage(req: Request, res: Response) {
             return res.status(400).json({ message: 'User ID must be a number' });
         }
 
-        const author_id = (req as AuthRequest).user?.id;
+        const author_id = req.user?.id;
         if (typeof author_id !== 'number') {
             return res.status(500).json({ message: 'Something went wrong getting user ID' });
         }
@@ -74,7 +74,7 @@ export function postDirectMessage(req: Request, res: Response) {
     }
 }
 
-export function respondToFriendRequest(req: Request, res: Response) {
+export function respondToFriendRequest(req: AuthRequest, res: Response) {
     const { userId, action } = req.body;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
@@ -84,7 +84,7 @@ export function respondToFriendRequest(req: Request, res: Response) {
     }
 
     try {
-        const userIdToRespond = (req as AuthRequest).user?.id;
+        const userIdToRespond = req.user?.id;
         if (typeof userIdToRespond !== 'number') {
             return res.status(500).json({ message: 'Something went wrong getting user ID' });
         }
@@ -103,8 +103,8 @@ export function respondToFriendRequest(req: Request, res: Response) {
     }
 }
 
-export function sendFriendRequest(req: Request, res: Response) {
-    const userIdToAdd = (req as AuthRequest).user?.id;
+export function sendFriendRequest(req: AuthRequest, res: Response) {
+    const userIdToAdd = req.user?.id;
     const { userId } = req.body;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
@@ -128,9 +128,9 @@ export function sendFriendRequest(req: Request, res: Response) {
     }
 }
 
-export function removeFriend(req: Request, res: Response) {
+export function removeFriend(req: AuthRequest, res: Response) {
     const { userId } = req.body;
-    const userIdToRemove = (req as AuthRequest).user?.id;
+    const userIdToRemove = req.user?.id;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
     }

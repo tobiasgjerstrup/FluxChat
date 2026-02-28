@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { HttpError } from '../utils/errors.js';
 import {
     addServerMember,
@@ -11,9 +11,9 @@ import { broadcastMessage } from '../ws/chat.js';
 import config from '../config.js';
 import { AuthRequest } from '../types/user.js';
 
-export async function getServers(req: Request, res: Response) {
+export async function getServers(req: AuthRequest, res: Response) {
     try {
-        const owner_id = (req as AuthRequest).user?.id;
+        const owner_id = req.user?.id;
         if (typeof owner_id !== 'number')
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
@@ -28,12 +28,12 @@ export async function getServers(req: Request, res: Response) {
     }
 }
 
-export async function postServer(req: Request, res: Response) {
+export async function postServer(req: AuthRequest, res: Response) {
     try {
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
 
-        const owner_id = (req as AuthRequest).user?.id;
+        const owner_id = req.user?.id;
         if (typeof owner_id !== 'number')
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
@@ -50,13 +50,13 @@ export async function postServer(req: Request, res: Response) {
     }
 }
 
-export async function postServerInvite(req: Request, res: Response) {
+export async function postServerInvite(req: AuthRequest, res: Response) {
     try {
         const { server_id, channel_id, max_uses, expires_at, temporary } = req.body;
         if (typeof server_id !== 'number')
             return res.status(400).json({ error: 'Server ID is required and must be a number' });
 
-        const creator_id = (req as AuthRequest).user?.id;
+        const creator_id = req.user?.id;
         if (typeof creator_id !== 'number')
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
@@ -79,12 +79,12 @@ export async function postServerInvite(req: Request, res: Response) {
     }
 }
 
-export async function joinServer(req: Request, res: Response) {
+export async function joinServer(req: AuthRequest, res: Response) {
     try {
         const code = req.params.code;
         if (typeof code !== 'string') return res.status(400).json({ error: 'Invite code is required' });
 
-        const user_id = (req as AuthRequest).user?.id;
+        const user_id = req.user?.id;
         if (typeof user_id !== 'number') return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
         joinServerWithInvite(code, user_id);

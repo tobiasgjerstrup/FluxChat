@@ -21,11 +21,11 @@ export async function getMessages(req: Request, res: Response) {
     }
 }
 
-export async function postMessage(req: Request, res: Response) {
+export async function postMessage(req: AuthRequest, res: Response) {
     try {
         const { content, channel_id } = req.body;
         if (!content || !channel_id) return res.status(400).json({ error: 'Content and channel ID are required' });
-        const author_id = (req as AuthRequest).user?.id || null; // req.user set by JWT middleware
+        const author_id = req.user?.id || null; // req.user set by JWT middleware
         if (typeof author_id !== 'number') {
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
         }
