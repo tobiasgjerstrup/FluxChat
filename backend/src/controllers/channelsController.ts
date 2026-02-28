@@ -2,10 +2,7 @@ import { Request, Response } from 'express';
 import { createChannel, getChannelsFromServer } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
 import { HttpError } from '../utils/errors.js';
-// Extend Request type to include user property
-interface AuthRequest extends Request {
-    user?: { id: number };
-}
+import { AuthRequest } from '../types/user.js';
 
 export async function getChannels(req: Request, res: Response) {
     try {
@@ -29,7 +26,10 @@ export async function postChannel(req: Request, res: Response) {
         const { server_id, name, type } = req.body;
         if (!server_id || !name || !type)
             return res.status(400).json({ error: 'Server ID, name, and type are required' });
-        const owner_id = (req as AuthRequest).user?.id || null;
+        const owner_id = (req as AuthRequest).user?.id;
+        if (typeof owner_id !== 'number') {
+            return res.status(500).json({ error: 'Something went wrong getting user ID' });
+        }
 
         const channel = createChannel({ server_id, name, type });
         broadcastMessage({ ...channel, owner_id });

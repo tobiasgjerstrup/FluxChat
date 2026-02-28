@@ -9,7 +9,7 @@ import {
     userReject,
     userRemove,
 } from '../services/db.js';
-import { AuthRequest } from '../middleware/auth.js';
+import { AuthRequest } from '../types/user.js';
 import { HttpError } from '../utils/errors.js';
 
 export function getDMParticipants(req: Request, res: Response) {
@@ -57,9 +57,14 @@ export function postDirectMessage(req: Request, res: Response) {
             return res.status(400).json({ message: 'User ID must be a number' });
         }
 
+        const author_id = (req as AuthRequest).user?.id;
+        if (typeof author_id !== 'number') {
+            return res.status(500).json({ message: 'Something went wrong getting user ID' });
+        }
+
         sendDirectMessage({
-            author_id: (req as AuthRequest).user.id,
-            participant_ids: [parseInt(req.params.userId), (req as AuthRequest).user.id],
+            author_id: author_id,
+            participant_ids: [parseInt(req.params.userId), author_id],
             content: req.body.content,
         });
         res.status(201).json({ message: 'Message sent' });
@@ -79,10 +84,14 @@ export function respondToFriendRequest(req: Request, res: Response) {
     }
 
     try {
+        const userIdToRespond = (req as AuthRequest).user?.id;
+        if (typeof userIdToRespond !== 'number') {
+            return res.status(500).json({ message: 'Something went wrong getting user ID' });
+        }
         if (action === 'accept') {
-            userAccept((req as AuthRequest).user.id, userId);
+            userAccept(userIdToRespond, userId);
         } else if (action === 'reject') {
-            userReject((req as AuthRequest).user.id, userId);
+            userReject(userIdToRespond, userId);
         }
         res.status(201).json({ message: 'Friend request responded' });
     } catch (err) {
@@ -99,12 +108,16 @@ export function sendFriendRequest(req: Request, res: Response) {
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
     }
-    if (userId === (req as AuthRequest).user.id) {
+    if (userId === (req as AuthRequest).user?.id) {
         return res.status(400).json({ message: 'You cannot send a friend request to yourself' });
     }
 
     try {
-        userAdd((req as AuthRequest).user.id, userId);
+        const userIdToAdd = (req as AuthRequest).user?.id;
+        if (typeof userIdToAdd !== 'number') {
+            return res.status(500).json({ message: 'Something went wrong getting user ID' });
+        }
+        userAdd(userIdToAdd, userId);
         res.status(201).json({ message: 'Friend request sent' });
     } catch (err) {
         if (err instanceof HttpError) {
@@ -120,12 +133,16 @@ export function removeFriend(req: Request, res: Response) {
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
     }
-    if (userId === (req as AuthRequest).user.id) {
+    if (userId === (req as AuthRequest).user?.id) {
         return res.status(400).json({ message: 'You cannot remove yourself from friends' });
     }
 
     try {
-        userRemove((req as AuthRequest).user.id, userId);
+        const userIdToRemove = (req as AuthRequest).user?.id;
+        if (typeof userIdToRemove !== 'number') {
+            return res.status(500).json({ message: 'Something went wrong getting user ID' });
+        }
+        userRemove(userIdToRemove, userId);
         res.status(201).json({ message: 'Friend removed' });
     } catch (err) {
         if (err instanceof HttpError) {

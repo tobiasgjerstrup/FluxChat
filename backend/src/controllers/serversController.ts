@@ -9,10 +9,7 @@ import {
 } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
 import config from '../config.js';
-// Extend Request type to include user property
-interface AuthRequest extends Request {
-    user?: { id: number };
-}
+import { AuthRequest } from '../types/user.js';
 
 export async function getServers(req: Request, res: Response) {
     try {

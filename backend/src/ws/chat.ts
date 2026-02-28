@@ -7,9 +7,7 @@ interface WebSocketData extends WebSocket {
 
 let wss: WebSocketServer | null = null;
 
-export function broadcastMessage(
-    message: string | { owner_id: number; id: number | bigint; name: string; icon_url: string | null },
-) {
+export function broadcastMessage(message: unknown) {
     if (!wss) return;
     const data = JSON.stringify(message);
     wss.clients.forEach((client) => {
