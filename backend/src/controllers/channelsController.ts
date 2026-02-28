@@ -28,8 +28,7 @@ export async function postChannel(req: AuthRequest, res: Response) {
             return res.status(400).json({ error: 'Server ID, name, and type are required' });
         const owner_id = req.user?.id;
         if (typeof owner_id !== 'number') {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+            return res.status(500).json({ error: 'Something went wrong getting user ID' });
         }
 
         const channel = createChannel({ server_id, name, type });
