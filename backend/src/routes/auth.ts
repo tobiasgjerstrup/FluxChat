@@ -48,7 +48,7 @@ router.post('/login', async (req, res) => {
 
     storeRefreshToken({ user_id: user.id, token: refreshToken });
 
-    return res.json({ token, refreshToken });
+    return res.json({ token, refreshToken, id: user.id, username: user.username, email: user.email });
 });
 
 router.post('/refresh', (req, res) => {

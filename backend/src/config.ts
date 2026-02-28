@@ -3,7 +3,11 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import type { StringValue } from 'ms';
 
-dotenv.config();
+if (process.env.NODE_ENV === 'test') {
+    dotenv.config({ path: '.env.test' });
+} else {
+    dotenv.config();
+}
 
 interface Config {
     jwtSecret: string;

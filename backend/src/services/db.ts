@@ -230,3 +230,202 @@ export function incrementInviteUses(inviteId: number) {
     const stmt = db.prepare('UPDATE ServerInvites SET uses = uses + 1 WHERE id = ?');
     stmt.run(inviteId);
 }
+
+export function getUsers() {
+    const stmt = db.prepare('SELECT id, username FROM Users ORDER BY created_at ASC');
+    return stmt.all() as { id: number | bigint; username: string }[];
+}
+
+// Helper: Find DMChannel by exact participant set
+function findDMChannelByParticipants(userIds: number[]): bigint | number | null {
+    const sortedUserIds = [...userIds].map(Number).sort((a, b) => a - b);
+    const channels = db
+        .prepare(
+            `
+            SELECT dm_channel_id FROM DMParticipants
+            WHERE user_id IN (${userIds.map(() => '?').join(',')})
+            GROUP BY dm_channel_id
+            HAVING COUNT(*) = ?`,
+        )
+        .all(...userIds, userIds.length) as { dm_channel_id: number | bigint }[];
+    for (const row of channels) {
+        const participants = db
+            .prepare('SELECT user_id FROM DMParticipants WHERE dm_channel_id = ?')
+            .all(row.dm_channel_id) as { user_id: number | bigint }[];
+        const ids = participants.map((p) => Number(p.user_id)).sort((a, b) => a - b);
+        if (ids.length === sortedUserIds.length && ids.every((id, i) => id === sortedUserIds[i])) {
+            return row.dm_channel_id;
+        }
+    }
+    return null;
+}
+
+export function sendDirectMessage({
+    author_id,
+    participant_ids,
+    content,
+}: {
+    author_id: number;
+    participant_ids: number[];
+    content: string;
+}) {
+    if (participant_ids.length < 2) {
+        throw new HttpError('At least 2 participants are required for a DM', 400);
+    }
+
+    if (!participant_ids.includes(author_id)) {
+        throw new HttpError('Author must be included in participant IDs', 400);
+    }
+
+    // Find or create DMChannel
+    let dm_channel_id = findDMChannelByParticipants(participant_ids);
+    if (!dm_channel_id) {
+        const stmt = db.prepare("INSERT INTO DMChannels (is_group, created_at) VALUES (?, datetime('now'))");
+        const info = stmt.run(participant_ids.length > 2 ? 1 : 0);
+        dm_channel_id = info.lastInsertRowid as number | bigint;
+        // Add participants
+        const addStmt = db.prepare('INSERT INTO DMParticipants (dm_channel_id, user_id) VALUES (?, ?)');
+        for (const user_id of participant_ids) {
+            addStmt.run(dm_channel_id, user_id);
+        }
+    }
+    // Insert message
+    const msgStmt = db.prepare(
+        "INSERT INTO DMMessages (dm_channel_id, author_id, content, created_at) VALUES (?, ?, ?, datetime('now'))",
+    );
+    const info = msgStmt.run(dm_channel_id, author_id, content);
+    return {
+        id: info.lastInsertRowid as number | bigint,
+        dm_channel_id,
+        author_id,
+        content,
+        created_at: new Date().toISOString(),
+    };
+}
+
+export function getMessagesForDMChannel(dm_channel_id: number | bigint) {
+    const stmt = db.prepare(`
+        SELECT m.*, u.username AS author_username
+        FROM DMMessages m
+        JOIN Users u ON m.author_id = u.id
+        WHERE m.dm_channel_id = ?
+        ORDER BY m.created_at ASC
+    `);
+    return stmt.all(dm_channel_id) as {
+        id: number | bigint;
+        dm_channel_id: number | bigint;
+        author_id: number | bigint;
+        content: string;
+        created_at: string;
+        author_username: string;
+    }[];
+}
+
+export function getParticipantsForDMChannel(dm_channel_id: number | bigint) {
+    const stmt = db.prepare(`
+        SELECT u.id, u.username
+        FROM DMParticipants p
+        JOIN Users u ON p.user_id = u.id
+        WHERE p.dm_channel_id = ?
+        ORDER BY u.username ASC
+    `);
+    return stmt.all(dm_channel_id) as { id: number | bigint; username: string }[];
+}
+
+export function userAdd(user_id: number, friend_id: number) {
+    const isSent = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
+        .get(user_id, friend_id);
+    if (isSent) {
+        throw new HttpError('Friend request already sent', 400);
+    }
+    const isAlreadyFriend = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'accepted'")
+        .get(user_id, friend_id);
+    if (isAlreadyFriend) {
+        throw new HttpError('You are already friends', 400);
+    }
+    const isBlocked = db
+        .prepare(
+            "SELECT 1 FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status = 'blocked'",
+        )
+        .get(user_id, friend_id, friend_id, user_id);
+    if (isBlocked) {
+        throw new HttpError('Cannot send friend request', 400);
+    }
+    const isReceived = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
+        .get(friend_id, user_id);
+    if (isReceived) {
+        userAccept(friend_id, user_id);
+        return;
+    }
+    const stmt = db.prepare(
+        "INSERT INTO friends (user_id, friend_id, status, created_at, updated_at) VALUES (?, ?, 'pending', datetime('now'), datetime('now'))",
+    );
+    stmt.run(user_id, friend_id);
+}
+
+export function userBlock(user_id: number, friend_id: number) {
+    const isBlocked = db
+        .prepare(
+            "SELECT 1 FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status = 'blocked'",
+        )
+        .get(user_id, friend_id, friend_id, user_id);
+
+    if (isBlocked) {
+        throw new HttpError('User is already blocked', 400);
+    }
+
+    const deleteStmt = db.prepare(
+        "DELETE FROM friends WHERE status != 'blocked' AND ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))",
+    );
+    deleteStmt.run(user_id, friend_id, friend_id, user_id);
+
+    const stmt = db.prepare(
+        "INSERT INTO friends (user_id, friend_id, status, created_at, updated_at) VALUES (?, ?, 'blocked', datetime('now'), datetime('now'))",
+    );
+    stmt.run(user_id, friend_id);
+}
+
+export function userAccept(user_id: number, friend_id: number) {
+    const isReceived = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
+        .get(friend_id, user_id);
+    if (!isReceived) {
+        throw new HttpError('No friend request to accept', 400);
+    }
+    const stmt = db.prepare(
+        "UPDATE friends SET status = 'accepted', updated_at = datetime('now') WHERE user_id = ? AND friend_id = ? AND status = 'pending'",
+    );
+    stmt.run(friend_id, user_id);
+
+    const reciprocalStmt = db.prepare(
+        "INSERT INTO friends (user_id, friend_id, status, created_at, updated_at) VALUES (?, ?, 'accepted', datetime('now'), datetime('now'))",
+    );
+    reciprocalStmt.run(user_id, friend_id);
+}
+
+export function userReject(user_id: number, friend_id: number) {
+    const isReceived = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
+        .get(friend_id, user_id);
+    if (!isReceived) {
+        throw new HttpError('No friend request to reject', 400);
+    }
+    const stmt = db.prepare("DELETE FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'");
+    stmt.run(friend_id, user_id);
+}
+
+export function userRemove(user_id: number, friend_id: number) {
+    const isFriend = db
+        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'accepted'")
+        .get(user_id, friend_id);
+    if (!isFriend) {
+        throw new HttpError('You are not friends', 400);
+    }
+    const stmt = db.prepare(
+        'DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)',
+    );
+    stmt.run(user_id, friend_id, friend_id, user_id);
+}

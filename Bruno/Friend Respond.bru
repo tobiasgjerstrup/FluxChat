@@ -1,0 +1,23 @@
+meta {
+  name: Friend Respond
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{URL}}/api/users/friends/respond
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": 1,
+    "action": "reject"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

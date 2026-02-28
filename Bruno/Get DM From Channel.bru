@@ -1,0 +1,20 @@
+meta {
+  name: Get DM From Channel
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{URL}}/api/users/message/1
+  body: none
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -157,6 +157,16 @@ export class Api {
         );
     }
 
+    public async getUsers(): Promise<{ users: { id: number; username: string }[] }> {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        return firstValueFrom(
+            this.http.get<{ users: { id: number; username: string }[] }>(`${environment.ip}/api/users`, { headers }),
+        );
+    }
+
     private async refreshTokenIfExpired(): Promise<void> {
         const payload = this.getJWTPayload();
         if (!payload || !payload.exp) return;
