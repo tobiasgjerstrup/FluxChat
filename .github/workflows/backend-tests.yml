@@ -26,3 +26,6 @@ jobs:
             - name: Run tests
               working-directory: backend
               run: npm test
+
+            - name: Lint backend
+              run: npx eslint . --max-warnings=0
