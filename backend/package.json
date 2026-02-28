@@ -9,7 +9,7 @@
     "scripts": {
         "start": "npx tsx --watch src/main.ts",
         "build": "tsgo",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "vitest --ui"
     },
     "devDependencies": {
         "@types/bcrypt": "^6.0.0",
@@ -18,8 +18,12 @@
         "@types/express": "^5.0.6",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/node": "^25.2.3",
+        "@types/supertest": "^7.2.0",
         "@types/ws": "^8.18.1",
-        "typescript": "^5.9.3"
+        "@vitest/ui": "^4.0.18",
+        "supertest": "^7.2.2",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.18"
     },
     "dependencies": {
         "bcrypt": "^6.0.0",
