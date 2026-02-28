@@ -1,2 +1,3 @@
 reviews:
-    review_drafts: true
+  auto_review:
+    drafts: true
