@@ -1,0 +1,29 @@
+meta {
+  name: Login
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: http://localhost:3001/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  mutation {
+    login(email: "convoke", password: "convoke") {
+      token
+      user {
+        id
+        username
+      }
+    }
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

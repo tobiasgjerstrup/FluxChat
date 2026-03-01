@@ -9,7 +9,7 @@ import channelRoutes from './routes/channels.js';
 import userRoutes from './routes/users.js';
 // import { jwtAuthMiddleware } from './middleware/auth.js';
 import { setupWebSocket } from './ws/chat.js';
-import { createApolloServer, getApolloMiddleware } from './graphql/server.js';
+import { createApolloServer } from './graphql/server.js';
 import { sqliteDBSetup } from './db/sqlite.js';
 
 const app = express();
@@ -39,9 +39,9 @@ import config from './config.js';
 // Initialize database
 const db = await sqliteDBSetup();
 
-// Setup Apollo Server
-await createApolloServer(db);
-app.use('/graphql', getApolloMiddleware());
+// Setup Apollo Server and GraphQL endpoint
+const graphqlMiddleware = await createApolloServer(db);
+app.use('/graphql', graphqlMiddleware);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => res.json({ status: 'ok' }));

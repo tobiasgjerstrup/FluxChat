@@ -16,13 +16,52 @@ The GraphQL server is integrated with Express and runs on `/graphql` endpoint.
 
 ## Usage
 
-### Accessing GraphQL Playground
+### Making GraphQL Requests
 
-Once the server is running, visit:
+The GraphQL endpoint accepts POST requests to `/graphql` with JSON bodies:
 
+**Using curl:**
+
+```bash
+curl -X POST http://localhost:3000/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ users { id username } }"}'
 ```
-http://localhost:3000/graphql
+
+**Using fetch:**
+
+```javascript
+fetch('http://localhost:3000/graphql', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        query: `
+      query {
+        users {
+          id
+          username
+        }
+      }
+    `,
+    }),
+});
 ```
+
+**Important:**
+
+- Requests must be sent as POST
+- Content-Type must be `application/json`
+- The query must be in the request body as a JSON object with a `query` field
+
+### GraphQL Playground
+
+Apollo Server 5 does not include GraphQL Playground by default. To test queries, you can:
+
+1. Use a GraphQL client like [Postman](https://www.postman.com/) or [Insomnia](https://insomnia.rest/)
+2. Use [Apollo Studio Sandbox](https://studio.apollographql.com/sandbox/explorer) and point it to `http://localhost:3000/graphql`
+3. Install a browser extension like GraphQL Playground or Altair GraphQL Client
 
 ### Authentication
 

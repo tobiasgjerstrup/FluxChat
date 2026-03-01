@@ -4,29 +4,21 @@ import Database from 'better-sqlite3';
 import { typeDefs } from './schema.js';
 import { resolvers, initializeDb } from './resolvers.js';
 import jwt from 'jsonwebtoken';
-
-let apolloServer: ApolloServer | null = null;
+import type { Request } from 'express';
 
 export async function createApolloServer(db: Database.Database) {
     initializeDb(db);
 
-    apolloServer = new ApolloServer({
+    const apolloServer = new ApolloServer({
         typeDefs,
         resolvers,
     });
 
     await apolloServer.start();
 
-    return apolloServer;
-}
-
-export const getApolloMiddleware = () => {
-    if (!apolloServer) {
-        throw new Error('Apollo Server not initialized');
-    }
-
+    // Return the middleware directly
     return expressMiddleware(apolloServer, {
-        context: async ({ req }: { req: { headers: { authorization?: string } } }) => {
+        context: async ({ req }: { req: Request }) => {
             const token = req.headers.authorization?.replace('Bearer ', '');
 
             if (token) {
@@ -44,4 +36,4 @@ export const getApolloMiddleware = () => {
             return {};
         },
     });
-};
+}
