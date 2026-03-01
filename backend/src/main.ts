@@ -9,6 +9,8 @@ import channelRoutes from './routes/channels.js';
 import userRoutes from './routes/users.js';
 // import { jwtAuthMiddleware } from './middleware/auth.js';
 import { setupWebSocket } from './ws/chat.js';
+import { createApolloServer, getApolloMiddleware } from './graphql/server.js';
+import { sqliteDBSetup } from './db/sqlite.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -33,6 +35,14 @@ app.use('/api/users', userRoutes);
 
 import type { Request, Response } from 'express';
 import config from './config.js';
+
+// Initialize database
+const db = await sqliteDBSetup();
+
+// Setup Apollo Server
+await createApolloServer(db);
+app.use('/graphql', getApolloMiddleware());
+
 // Health check
 app.get('/api/health', (req: Request, res: Response) => res.json({ status: 'ok' }));
 
