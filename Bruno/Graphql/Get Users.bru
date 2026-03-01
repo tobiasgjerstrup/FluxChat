@@ -1,0 +1,28 @@
+meta {
+  name: Get Users
+  type: graphql
+  seq: 4
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    users {
+      id
+      username
+      email
+      avatar_url
+      created_at
+      last_online_at
+    }
+  }
+}

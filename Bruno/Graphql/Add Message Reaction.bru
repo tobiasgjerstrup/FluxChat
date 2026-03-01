@@ -1,0 +1,27 @@
+meta {
+  name: Add Message Reaction
+  type: graphql
+  seq: 24
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    addMessageReaction(message_id: 1, emoji: "👍") {
+      id
+      emoji
+      user {
+        username
+      }
+    }
+  }
+}

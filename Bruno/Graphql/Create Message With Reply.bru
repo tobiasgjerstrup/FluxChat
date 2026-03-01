@@ -1,0 +1,41 @@
+meta {
+  name: Create Message With Reply
+  type: graphql
+  seq: 21
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    createMessage(
+      channel_id: 1
+      content: "This is a reply"
+      reply_to_id: 1
+    ) {
+      id
+      content
+      created_at
+      reply_to_id
+      reply_to {
+        id
+        content
+        author {
+          username
+        }
+      }
+      author {
+        username
+        avatar_url
+      }
+    }
+  }
+}

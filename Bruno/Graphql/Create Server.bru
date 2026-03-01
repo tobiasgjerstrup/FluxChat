@@ -1,0 +1,36 @@
+meta {
+  name: Create Server
+  type: graphql
+  seq: 10
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    createServer(name: "My Test Server", icon_url: "https://example.com/icon.png") {
+      id
+      name
+      owner_id
+      icon_url
+      created_at
+      owner {
+        username
+      }
+      members {
+        id
+        user {
+          username
+        }
+      }
+    }
+  }
+}

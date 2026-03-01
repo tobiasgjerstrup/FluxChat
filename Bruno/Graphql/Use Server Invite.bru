@@ -1,0 +1,32 @@
+meta {
+  name: Use Server Invite
+  type: graphql
+  seq: 42
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    useServerInvite(code: "abc12345") {
+      id
+      server {
+        id
+        name
+        icon_url
+      }
+      user {
+        username
+      }
+      joined_at
+    }
+  }
+}

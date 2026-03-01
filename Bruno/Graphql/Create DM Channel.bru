@@ -1,0 +1,30 @@
+meta {
+  name: Create DM Channel
+  type: graphql
+  seq: 30
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    createDMChannel(user_ids: [2], is_group: false) {
+      id
+      is_group
+      created_at
+      participants {
+        id
+        username
+        avatar_url
+      }
+    }
+  }
+}

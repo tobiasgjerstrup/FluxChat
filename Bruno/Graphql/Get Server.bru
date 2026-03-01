@@ -1,0 +1,53 @@
+meta {
+  name: Get Server
+  type: graphql
+  seq: 12
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    server(id: 1) {
+      id
+      name
+      owner_id
+      icon_url
+      created_at
+      owner {
+        username
+        avatar_url
+      }
+      channels {
+        id
+        name
+        type
+        topic
+        position
+      }
+      members {
+        id
+        user {
+          username
+          avatar_url
+        }
+        nickname
+        joined_at
+      }
+      roles {
+        id
+        name
+        color
+        position
+      }
+    }
+  }
+}

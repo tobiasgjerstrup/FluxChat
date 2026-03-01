@@ -1,0 +1,38 @@
+meta {
+  name: Get User DM Channels
+  type: graphql
+  seq: 32
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    userDMChannels(user_id: 1) {
+      id
+      is_group
+      created_at
+      participants {
+        id
+        username
+        avatar_url
+      }
+      messages {
+        id
+        content
+        created_at
+        author {
+          username
+        }
+      }
+    }
+  }
+}

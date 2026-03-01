@@ -1,0 +1,32 @@
+meta {
+  name: Update Server
+  type: graphql
+  seq: 15
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    updateServer(
+      id: 1
+      name: "Updated Server Name"
+      icon_url: "https://example.com/new-icon.png"
+    ) {
+      id
+      name
+      icon_url
+      owner {
+        username
+      }
+    }
+  }
+}

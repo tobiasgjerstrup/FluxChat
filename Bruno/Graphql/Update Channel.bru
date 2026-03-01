@@ -1,0 +1,33 @@
+meta {
+  name: Update Channel
+  type: graphql
+  seq: 16
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    updateChannel(
+      id: 1
+      name: "updated-channel-name"
+      topic: "New channel topic"
+    ) {
+      id
+      name
+      topic
+      type
+      server {
+        name
+      }
+    }
+  }
+}

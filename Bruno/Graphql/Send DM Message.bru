@@ -1,0 +1,35 @@
+meta {
+  name: Send DM Message
+  type: graphql
+  seq: 31
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    sendDMMessage(dm_channel_id: 1, content: "Hey, how are you?") {
+      id
+      content
+      created_at
+      author {
+        username
+        avatar_url
+      }
+      dm_channel {
+        id
+        participants {
+          username
+        }
+      }
+    }
+  }
+}

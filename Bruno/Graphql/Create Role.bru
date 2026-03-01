@@ -1,0 +1,36 @@
+meta {
+  name: Create Role
+  type: graphql
+  seq: 50
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    createRole(
+      server_id: 1
+      name: "Moderator"
+      color: "#FF5733"
+      position: 1
+      permissions: "kick,ban,manage_messages"
+    ) {
+      id
+      name
+      color
+      position
+      permissions
+      server {
+        name
+      }
+    }
+  }
+}

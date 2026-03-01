@@ -1,0 +1,31 @@
+meta {
+  name: Update Server Member Nickname
+  type: graphql
+  seq: 53
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    updateServerMemberNickname(
+      server_id: 1
+      user_id: 1
+      nickname: "Cool Nickname"
+    ) {
+      id
+      nickname
+      user {
+        username
+      }
+    }
+  }
+}

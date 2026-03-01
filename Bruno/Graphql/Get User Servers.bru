@@ -1,0 +1,41 @@
+meta {
+  name: Get User Servers
+  type: graphql
+  seq: 11
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    userServers(user_id: 1) {
+      id
+      name
+      owner_id
+      icon_url
+      created_at
+      channels {
+        id
+        name
+        type
+        topic
+      }
+      members {
+        id
+        user {
+          username
+          avatar_url
+        }
+        nickname
+      }
+    }
+  }
+}

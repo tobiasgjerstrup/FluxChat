@@ -1,0 +1,29 @@
+meta {
+  name: Edit Message
+  type: graphql
+  seq: 23
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    editMessage(id: 1, content: "Updated message content") {
+      id
+      content
+      created_at
+      edited_at
+      author {
+        username
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Create Channel
+  type: graphql
+  seq: 13
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    createChannel(
+      server_id: 1
+      name: "general"
+      type: "text"
+      topic: "General discussion"
+    ) {
+      id
+      name
+      type
+      topic
+      server_id
+      created_at
+      server {
+        name
+      }
+    }
+  }
+}

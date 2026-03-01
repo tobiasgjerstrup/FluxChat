@@ -1,0 +1,44 @@
+meta {
+  name: Get Channel Messages
+  type: graphql
+  seq: 22
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    channelMessages(channel_id: 1, limit: 50, offset: 0) {
+      id
+      content
+      created_at
+      edited_at
+      author {
+        id
+        username
+        avatar_url
+      }
+      reply_to {
+        id
+        content
+        author {
+          username
+        }
+      }
+      reactions {
+        emoji
+        user {
+          username
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Get Server Roles
+  type: graphql
+  seq: 51
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    serverRoles(server_id: 1) {
+      id
+      name
+      color
+      position
+      permissions
+      server {
+        name
+      }
+    }
+  }
+}

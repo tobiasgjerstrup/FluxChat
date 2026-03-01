@@ -1,0 +1,41 @@
+meta {
+  name: Create Server Invite
+  type: graphql
+  seq: 40
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    createServerInvite(
+      server_id: 1
+      max_uses: 10
+      temporary: false
+    ) {
+      id
+      code
+      server_id
+      creator_id
+      max_uses
+      uses
+      expires_at
+      temporary
+      created_at
+      server {
+        name
+      }
+      creator {
+        username
+      }
+    }
+  }
+}

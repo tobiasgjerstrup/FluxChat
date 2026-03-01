@@ -1,0 +1,35 @@
+meta {
+  name: Get Server Members
+  type: graphql
+  seq: 52
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    serverMembers(server_id: 1) {
+      id
+      nickname
+      joined_at
+      user {
+        id
+        username
+        avatar_url
+      }
+      roles {
+        id
+        name
+        color
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Update User
+  type: graphql
+  seq: 6
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    updateUser(
+      id: 1
+      username: "newusername"
+      avatar_url: "https://example.com/avatar.png"
+    ) {
+      id
+      username
+      email
+      avatar_url
+    }
+  }
+}

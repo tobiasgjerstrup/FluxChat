@@ -1,0 +1,37 @@
+meta {
+  name: Get Server Invite
+  type: graphql
+  seq: 41
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    serverInvite(code: "abc12345") {
+      id
+      code
+      server {
+        id
+        name
+        icon_url
+      }
+      creator {
+        username
+      }
+      max_uses
+      uses
+      expires_at
+      temporary
+      revoked
+    }
+  }
+}

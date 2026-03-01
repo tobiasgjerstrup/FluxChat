@@ -1,0 +1,32 @@
+meta {
+  name: Create Message
+  type: graphql
+  seq: 20
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    createMessage(channel_id: 1, content: "Hello from GraphQL!") {
+      id
+      content
+      created_at
+      edited_at
+      channel_id
+      author {
+        id
+        username
+        avatar_url
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 meta {
-  name: Login
+  name: Register
   type: graphql
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -12,7 +12,11 @@ post {
 
 body:graphql {
   mutation {
-    login(email: "convoke", password: "convoke") {
+    register(
+      username: "testuser"
+      email: "test@example.com"
+      password: "password123"
+    ) {
       token
       refresh_token
       user {
@@ -20,14 +24,15 @@ body:graphql {
         username
         email
         avatar_url
+        created_at
       }
     }
   }
 }
 
 script:post-response {
-  const token = res.body.data.login.token;
-  const refreshToken = res.body.data.login.refresh_token;
+  const token = res.body.data.register.token;
+  const refreshToken = res.body.data.register.refresh_token;
   
   if (token) {
     bru.setEnvVar("JWT", token);

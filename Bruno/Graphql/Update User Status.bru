@@ -1,0 +1,30 @@
+meta {
+  name: Update User Status
+  type: graphql
+  seq: 60
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  mutation {
+    updateUserStatus(
+      user_id: 1
+      status: "online"
+      custom_status: "Building cool stuff 🚀"
+    ) {
+      user_id
+      status
+      custom_status
+      updated_at
+    }
+  }
+}

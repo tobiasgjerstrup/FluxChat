@@ -1,0 +1,33 @@
+meta {
+  name: Get Server Invites
+  type: graphql
+  seq: 43
+}
+
+post {
+  url: {{URL}}/graphql
+  body: graphql
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{JWT}}
+}
+
+body:graphql {
+  query {
+    serverInvites(server_id: 1) {
+      id
+      code
+      creator {
+        username
+      }
+      max_uses
+      uses
+      expires_at
+      temporary
+      revoked
+      created_at
+    }
+  }
+}
