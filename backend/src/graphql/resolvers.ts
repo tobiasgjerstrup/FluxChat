@@ -15,8 +15,14 @@ export const resolvers = {
         parseValue(value: unknown) {
             return new Date(value as string);
         },
-        serialize(value: Date) {
-            return value.toISOString();
+        serialize(value: unknown) {
+            if (typeof value === 'string') {
+                return value;
+            }
+            if (value instanceof Date) {
+                return value.toISOString();
+            }
+            return String(value);
         },
     },
 
