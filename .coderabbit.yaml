@@ -1,3 +1,16 @@
 reviews:
-  auto_review:
-    drafts: true
+    auto_review:
+        enabled: true
+        base_branches:
+            - main
+            - develop
+        drafts: true
+        changes_requested: true
+        lgtm: false
+        max_lines: 2000
+
+ignore:
+    paths:
+        - 'docs/**'
+        - 'dist/**'
+        - 'snapshots/**'
