@@ -1,0 +1,33 @@
+name: Validate Branch
+
+on:
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    validate-branch:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Validate branch name for main
+              if: github.event.pull_request.base.ref == 'main'
+              env:
+                  PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+              run: |
+                  branch_name="$PR_BRANCH"
+                  if [[ ! "$branch_name" =~ ^(release|hotfix)/ ]]; then
+                    echo "Error: PRs to main can only come from release/* or hotfix/* branches"
+                    echo "Current branch: $branch_name"
+                    exit 1
+                  fi
+
+            - name: Validate branch name for develop
+              if: github.event.pull_request.base.ref == 'develop'
+              env:
+                  PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+              run: |
+                  branch_name="$PR_BRANCH"
+                  if [[ ! "$branch_name" =~ ^(release|hotfix|feature)/ ]]; then
+                    echo "Error: PRs to develop can only come from release/*, hotfix/*, or feature/* branches"
+                    echo "Current branch: $branch_name"
+                    exit 1
+                  fi
