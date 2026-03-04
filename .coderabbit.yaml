@@ -8,9 +8,8 @@ reviews:
         changes_requested: true
         lgtm: false
         max_lines: 2000
-
-ignore:
-    paths:
-        - 'docs/**'
-        - 'dist/**'
-        - 'snapshots/**'
+    ignore:
+        paths:
+            - 'docs/**'
+            - 'dist/**'
+            - 'snapshots/**'
