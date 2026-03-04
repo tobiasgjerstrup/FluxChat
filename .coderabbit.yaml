@@ -5,11 +5,7 @@ reviews:
             - main
             - develop
         drafts: true
-        changes_requested: true
-        lgtm: false
-        max_lines: 2000
-    ignore:
-        paths:
-            - 'docs/**'
-            - 'dist/**'
-            - 'snapshots/**'
+    path_filters:
+        - '!docs/**'
+        - '!dist/**'
+        - '!snapshots/**'
