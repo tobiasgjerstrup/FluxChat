@@ -59,9 +59,7 @@ export class Api {
         );
         this.JWT.set(response.token);
         localStorage.setItem('jwt', response.token);
-        console.log('Received refresh token:', response.refreshToken);
         this.JWT_REFRESH.set(response.refreshToken);
-        console.log('Set JWT_REFRESH signal:', this.JWT_REFRESH());
         localStorage.setItem('jwt_refresh', response.refreshToken);
         return response;
     }
@@ -89,12 +87,10 @@ export class Api {
     }
 
     public async register(username: string, email: string, password: string): Promise<any> {
-        await this.refreshTokenIfExpired();
         return firstValueFrom(
             this.http.post<any>(`${environment.ip}/api/auth/register`, { username, email, password }),
         );
     }
-
     public async getServers(): Promise<Server[]> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
@@ -162,13 +158,14 @@ export class Api {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
+        let url = `${environment.ip}/api/users?limit=15`;
+        if (search) {
+            url += `&search=${encodeURIComponent(search)}`;
+        }
         return firstValueFrom(
-            this.http.get<{ users: { id: number; username: string }[] }>(
-                `${environment.ip}/api/users?limit=15${search ? `&search=${search}` : ''}`,
-                {
-                    headers,
-                },
-            ),
+            this.http.get<{ users: { id: number; username: string }[] }>(url, {
+                headers,
+            }),
         );
     }
 

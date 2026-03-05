@@ -13,9 +13,19 @@ export class AddFriend implements OnInit {
 
     public users = signal<{ id: number; username: string }[]>([]);
     public search = signal('');
+    private searchTimeout?: number;
 
     ngOnInit() {
         this.getUsers();
+    }
+
+    public onSearchInput() {
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+        this.searchTimeout = window.setTimeout(() => {
+            this.getUsers();
+        }, 50);
     }
 
     public async getUsers() {
