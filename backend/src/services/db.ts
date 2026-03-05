@@ -231,9 +231,29 @@ export function incrementInviteUses(inviteId: number) {
     stmt.run(inviteId);
 }
 
-export function getUsers() {
-    const stmt = db.prepare('SELECT id, username FROM Users ORDER BY created_at ASC');
-    return stmt.all() as { id: number | bigint; username: string }[];
+export function getUsers({ limit, offset, search }: { limit?: number; offset?: number; search?: string }) {
+    let query = 'SELECT id, username FROM Users';
+    const params: (number | string)[] = [];
+
+    if (search) {
+        query += ' WHERE username LIKE ?';
+        params.push(`%${search}%`);
+    }
+
+    query += ' ORDER BY created_at ASC';
+
+    if (limit !== undefined) {
+        query += ' LIMIT ?';
+        params.push(limit);
+    }
+
+    if (offset !== undefined) {
+        query += ' OFFSET ?';
+        params.push(offset);
+    }
+
+    const stmt = db.prepare(query);
+    return stmt.all(...params) as { id: number | bigint; username: string }[];
 }
 
 // Helper: Find DMChannel by exact participant set

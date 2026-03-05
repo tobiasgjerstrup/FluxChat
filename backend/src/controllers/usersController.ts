@@ -27,7 +27,11 @@ export function getDMParticipants(req: AuthRequest, res: Response) {
 
 export function getAllUsers(req: AuthRequest, res: Response) {
     try {
-        const users = getUsers();
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
+        const search = req.query.search ? (req.query.search as string) : undefined;
+
+        const users = getUsers({ limit, offset, search });
         res.status(200).json({ message: 'Successfully fetched users', users });
     } catch (err) {
         console.error(err);
