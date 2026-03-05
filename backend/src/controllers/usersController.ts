@@ -27,8 +27,19 @@ export function getDMParticipants(req: AuthRequest, res: Response) {
 
 export function getAllUsers(req: AuthRequest, res: Response) {
     try {
-        const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-        const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
+        const MAX_LIMIT = 100;
+        const parsedLimit = req.query.limit ? parseInt(req.query.limit as string, 10) : MAX_LIMIT;
+        const parsedOffset = req.query.offset ? parseInt(req.query.offset as string, 10) : undefined;
+
+        if (parsedLimit !== undefined && (isNaN(parsedLimit) || parsedLimit < 0)) {
+            return res.status(400).json({ message: 'Limit must be a non-negative number' });
+        }
+        if (parsedOffset !== undefined && (isNaN(parsedOffset) || parsedOffset < 0)) {
+            return res.status(400).json({ message: 'Offset must be a non-negative number' });
+        }
+
+        const limit = parsedLimit !== undefined ? Math.min(parsedLimit, MAX_LIMIT) : undefined;
+        const offset = parsedOffset;
         const search = req.query.search ? (req.query.search as string) : undefined;
 
         const users = getUsers({ limit, offset, search });

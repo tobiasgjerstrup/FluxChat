@@ -245,11 +245,10 @@ export function getUsers({ limit, offset, search }: { limit?: number; offset?: n
     if (limit !== undefined) {
         query += ' LIMIT ?';
         params.push(limit);
-    }
-
-    if (offset !== undefined) {
-        query += ' OFFSET ?';
-        params.push(offset);
+        if (offset !== undefined) {
+            query += ' OFFSET ?';
+            params.push(offset);
+        }
     }
 
     const stmt = db.prepare(query);
