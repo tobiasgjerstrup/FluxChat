@@ -157,13 +157,18 @@ export class Api {
         );
     }
 
-    public async getUsers(): Promise<{ users: { id: number; username: string }[] }> {
+    public async getUsers(search?: string): Promise<{ users: { id: number; username: string }[] }> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
         return firstValueFrom(
-            this.http.get<{ users: { id: number; username: string }[] }>(`${environment.ip}/api/users`, { headers }),
+            this.http.get<{ users: { id: number; username: string }[] }>(
+                `${environment.ip}/api/users?limit=15${search ? `&search=${search}` : ''}`,
+                {
+                    headers,
+                },
+            ),
         );
     }
 
