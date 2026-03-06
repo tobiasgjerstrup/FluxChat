@@ -376,7 +376,7 @@ export function userAdd(user_id: number, friend_id: number) {
         .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
         .get(friend_id, user_id);
     if (isReceived) {
-        userAccept(friend_id, user_id);
+        userAccept(user_id, friend_id);
         return;
     }
     const stmt = db.prepare(
