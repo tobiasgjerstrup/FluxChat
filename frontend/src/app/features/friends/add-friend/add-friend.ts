@@ -32,5 +32,8 @@ export class AddFriend implements OnInit {
         this.users.set((await this.api.getUsers(this.search() ?? undefined)).users);
     }
 
-    public addFriend(userId: number) {}
+    public async addFriend(userId: number) {
+        const res = await this.api.addFriend(userId);
+        console.log(res);
+    }
 }

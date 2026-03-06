@@ -169,6 +169,20 @@ export class Api {
         );
     }
 
+    public async addFriend(userId: number) {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        return firstValueFrom(
+            this.http.post<{ message: string }>(
+                `${environment.ip}/api/users/friends/send`,
+                { userId: userId },
+                { headers },
+            ),
+        );
+    }
+
     private async refreshTokenIfExpired(): Promise<void> {
         const payload = this.getJWTPayload();
         if (!payload || !payload.exp) return;
