@@ -20,8 +20,12 @@ export class Friends {
     }
 
     async ngOnInit() {
-        const res = await this.api.getFriends();
-        this.friends.set(res);
+        try {
+            const res = await this.api.getFriends();
+            this.friends.set(res);
+        } catch (error) {
+            console.error('Failed to fetch friends:', error);
+        }
     }
 
     public async acceptFriendRequest(userId: number) {

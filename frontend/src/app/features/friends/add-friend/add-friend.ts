@@ -29,15 +29,25 @@ export class AddFriend implements OnInit {
     }
 
     public async getUsers() {
-        this.users.set((await this.api.getUsers(this.search() ?? undefined)).users);
+        try {
+            this.users.set((await this.api.getUsers(this.search() ?? undefined)).users);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
     }
 
     public async friendAction(userId: number, action: 'accept' | 'reject' | 'add') {
-        const res = await this.api.addFriend(userId, action);
-        if (res.message.toLowerCase().includes('friend request sent')) {
-            this.users.update((users) =>
-                users.map((user) => (user.id === userId ? { ...user, FS_Status: 'pending', FR_Status: null } : user)),
-            );
+        try {
+            const res = await this.api.addFriend(userId, action);
+            if (res.message.toLowerCase().includes('friend request sent')) {
+                this.users.update((users) =>
+                    users.map((user) =>
+                        user.id === userId ? { ...user, FS_Status: 'pending', FR_Status: null } : user,
+                    ),
+                );
+            }
+        } catch (error) {
+            console.error('Error performing friend action:', error);
         }
     }
 }
