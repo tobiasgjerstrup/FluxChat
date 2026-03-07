@@ -463,14 +463,14 @@ export function userReject(user_id: number, friend_id: number) {
 export function userRemove(user_id: number, friend_id: number) {
     const isFriend = db
         .prepare(
-            "SELECT 1 FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?) AND status IN ('accepted', 'pending')",
+            "SELECT 1 FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status IN ('accepted', 'pending')",
         )
         .get(user_id, friend_id, friend_id, user_id);
     if (!isFriend) {
         throw new HttpError('You are not friends', 400);
     }
     const stmt = db.prepare(
-        'DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)',
+        "DELETE FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status IN ('accepted', 'pending')",
     );
     stmt.run(user_id, friend_id, friend_id, user_id);
 }
