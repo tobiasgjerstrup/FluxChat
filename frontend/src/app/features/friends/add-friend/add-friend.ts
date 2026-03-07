@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 export class AddFriend implements OnInit {
     constructor(private api: Api) {}
 
-    public users = signal<{ id: number; username: string }[]>([]);
+    public users = signal<{ id: number; username: string; FS_Status: string | null; FR_Status: string | null }[]>([]);
     public search = signal('');
     private searchTimeout?: number;
 
@@ -32,8 +32,12 @@ export class AddFriend implements OnInit {
         this.users.set((await this.api.getUsers(this.search() ?? undefined)).users);
     }
 
-    public async addFriend(userId: number) {
-        const res = await this.api.addFriend(userId);
-        console.log(res);
+    public async friendAction(userId: number, action: 'accept' | 'reject' | 'add') {
+        const res = await this.api.addFriend(userId, action);
+        if (res.message.toLowerCase().includes('friend request sent')) {
+            this.users.update((users) =>
+                users.map((user) => (user.id === userId ? { ...user, FS_Status: 'pending', FR_Status: null } : user)),
+            );
+        }
     }
 }

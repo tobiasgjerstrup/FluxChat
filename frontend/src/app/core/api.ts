@@ -153,7 +153,9 @@ export class Api {
         );
     }
 
-    public async getUsers(search?: string): Promise<{ users: { id: number; username: string }[] }> {
+    public async getUsers(
+        search?: string,
+    ): Promise<{ users: { id: number; username: string; FS_Status: string | null; FR_Status: string | null }[] }> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
@@ -163,24 +165,36 @@ export class Api {
             url += `&search=${encodeURIComponent(search)}`;
         }
         return firstValueFrom(
-            this.http.get<{ users: { id: number; username: string }[] }>(url, {
+            this.http.get<{
+                users: { id: number; username: string; FS_Status: string | null; FR_Status: string | null }[];
+            }>(url, {
                 headers,
             }),
         );
     }
 
-    public async addFriend(userId: number) {
+    public async addFriend(userId: number, action: 'accept' | 'reject' | 'add'): Promise<{ message: string }> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return firstValueFrom(
-            this.http.post<{ message: string }>(
-                `${environment.ip}/api/users/friends/send`,
-                { userId: userId },
-                { headers },
-            ),
-        );
+        if (action === 'add') {
+            return firstValueFrom(
+                this.http.post<{ message: string }>(
+                    `${environment.ip}/api/users/friends/send`,
+                    { userId: userId },
+                    { headers },
+                ),
+            );
+        } else {
+            return firstValueFrom(
+                this.http.post<{ message: string }>(
+                    `${environment.ip}/api/users/friends/respond`,
+                    { userId: userId, action: action },
+                    { headers },
+                ),
+            );
+        }
     }
 
     private async refreshTokenIfExpired(): Promise<void> {
