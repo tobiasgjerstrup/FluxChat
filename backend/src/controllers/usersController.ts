@@ -26,6 +26,10 @@ export function getDMParticipants(req: AuthRequest, res: Response) {
 }
 
 export function getAllUsers(req: AuthRequest, res: Response) {
+    const author_id = req.user?.id;
+    if (typeof author_id !== 'number') {
+        return res.status(500).json({ message: 'Something went wrong getting user ID' });
+    }
     try {
         const MAX_LIMIT = 100;
         const parsedLimit = req.query.limit ? parseInt(req.query.limit as string, 10) : MAX_LIMIT;
@@ -42,7 +46,7 @@ export function getAllUsers(req: AuthRequest, res: Response) {
         const offset = parsedOffset;
         const search = req.query.search ? (req.query.search as string) : undefined;
 
-        const users = getUsers({ limit, offset, search });
+        const users = getUsers(author_id, { limit, offset, search });
         res.status(200).json({ message: 'Successfully fetched users', users });
     } catch (err) {
         console.error(err);

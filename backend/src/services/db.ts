@@ -231,16 +231,40 @@ export function incrementInviteUses(inviteId: number) {
     stmt.run(inviteId);
 }
 
-export function getUsers({ limit, offset, search }: { limit?: number; offset?: number; search?: string }) {
-    let query = 'SELECT id, username FROM Users';
-    const params: (number | string)[] = [];
+export function getUsers(
+    author_id: number,
+    { limit, offset, search }: { limit?: number; offset?: number; search?: string },
+) {
+    // ? FR = Friends Requests Received, FS = Friends Requests Sent
+    let query = `
+        SELECT
+            U.id,
+            U.username,
+            (
+                SELECT F1.status
+                FROM Friends F1
+                WHERE F1.user_id = ? AND F1.friend_id = U.id
+                ORDER BY F1.updated_at DESC
+                LIMIT 1
+            ) AS FS_Status,
+            (
+                SELECT F2.status
+                FROM Friends F2
+                WHERE F2.user_id = U.id AND F2.friend_id = ?
+                ORDER BY F2.updated_at DESC
+                LIMIT 1
+            ) AS FR_Status
+        FROM Users U
+        WHERE U.id != ?
+    `;
+    const params: (number | string)[] = [author_id, author_id, author_id];
 
     if (search) {
-        query += ' WHERE username LIKE ?';
+        query += ' WHERE U.username LIKE ?';
         params.push(`%${search}%`);
     }
 
-    query += ' ORDER BY created_at ASC';
+    query += ' ORDER BY U.created_at ASC';
 
     if (limit !== undefined) {
         query += ' LIMIT ?';
