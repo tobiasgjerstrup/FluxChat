@@ -231,9 +231,61 @@ export function incrementInviteUses(inviteId: number) {
     stmt.run(inviteId);
 }
 
-export function getUsers() {
-    const stmt = db.prepare('SELECT id, username FROM Users ORDER BY created_at ASC');
-    return stmt.all() as { id: number | bigint; username: string }[];
+export function getUsers(
+    author_id: number,
+    { limit, offset, search }: { limit?: number; offset?: number; search?: string },
+) {
+    // ? FR = Friends Requests Received, FS = Friends Requests Sent
+    let query = `
+        SELECT
+            U.id,
+            U.username,
+            (
+                SELECT F1.status
+                FROM Friends F1
+                WHERE F1.user_id = ? AND F1.friend_id = U.id
+                ORDER BY F1.updated_at DESC
+                LIMIT 1
+            ) AS FS_Status,
+            (
+                SELECT F2.status
+                FROM Friends F2
+                WHERE F2.user_id = U.id AND F2.friend_id = ?
+                ORDER BY F2.updated_at DESC
+                LIMIT 1
+            ) AS FR_Status
+        FROM Users U
+        WHERE U.id != ?
+    `;
+    const params: (number | string)[] = [author_id, author_id, author_id];
+
+    if (search) {
+        query += ' AND U.username LIKE ?';
+        params.push(`%${search}%`);
+    }
+
+    query += ' ORDER BY U.created_at ASC';
+
+    if (limit !== undefined) {
+        query += ' LIMIT ?';
+        params.push(limit);
+    } else if (offset !== undefined) {
+        query += ' LIMIT ?';
+        params.push(-1);
+    }
+
+    if (offset !== undefined) {
+        query += ' OFFSET ?';
+        params.push(offset);
+    }
+
+    const stmt = db.prepare(query);
+    return stmt.all(...params) as {
+        id: number | bigint;
+        username: string;
+        FS_Status: string | null;
+        FR_Status: string | null;
+    }[];
 }
 
 // Helper: Find DMChannel by exact participant set
@@ -357,7 +409,7 @@ export function userAdd(user_id: number, friend_id: number) {
         .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
         .get(friend_id, user_id);
     if (isReceived) {
-        userAccept(friend_id, user_id);
+        userAccept(user_id, friend_id);
         return;
     }
     const stmt = db.prepare(
@@ -419,13 +471,39 @@ export function userReject(user_id: number, friend_id: number) {
 
 export function userRemove(user_id: number, friend_id: number) {
     const isFriend = db
-        .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'accepted'")
-        .get(user_id, friend_id);
+        .prepare(
+            "SELECT 1 FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status IN ('accepted', 'pending')",
+        )
+        .get(user_id, friend_id, friend_id, user_id);
     if (!isFriend) {
         throw new HttpError('You are not friends', 400);
     }
     const stmt = db.prepare(
-        'DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)',
+        "DELETE FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status IN ('accepted', 'pending')",
     );
     stmt.run(user_id, friend_id, friend_id, user_id);
+}
+
+export function getFriends(user_id: number) {
+    const stmt = db.prepare(
+        `SELECT DISTINCT result.id, result.username, result.status, result.relation_type
+         FROM (
+             SELECT
+                 CASE WHEN f.user_id = ? THEN u_friend.id ELSE u_user.id END AS id,
+                 CASE WHEN f.user_id = ? THEN u_friend.username ELSE u_user.username END AS username,
+                 f.status,
+                 CASE
+                     WHEN f.status = 'accepted' THEN 'accepted'
+                     WHEN f.user_id = ? THEN 'outgoing'
+                     ELSE 'incoming'
+                 END AS relation_type
+             FROM friends f
+             JOIN Users u_user ON f.user_id = u_user.id
+             JOIN Users u_friend ON f.friend_id = u_friend.id
+             WHERE (f.user_id = ? OR f.friend_id = ?)
+               AND f.status IN ('pending', 'accepted')
+         ) AS result
+         ORDER BY result.username ASC`,
+    );
+    return stmt.all(user_id, user_id, user_id, user_id, user_id);
 }

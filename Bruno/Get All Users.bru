@@ -5,9 +5,15 @@ meta {
 }
 
 get {
-  url: {{URL}}/api/users?
+  url: {{URL}}/api/users?limit=50&offset=0&search
   body: none
   auth: inherit
+}
+
+params:query {
+  limit: 50
+  offset: 0
+  search: 
 }
 
 headers {

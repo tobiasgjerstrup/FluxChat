@@ -1,0 +1,22 @@
+meta {
+  name: Friend Remove
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{URL}}/api/users/friends/remove
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": 7
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
