@@ -8,6 +8,7 @@ import {
     userAdd,
     userReject,
     userRemove,
+    getFriends,
 } from '../services/db.js';
 import { AuthRequest } from '../types/user.js';
 import { HttpError } from '../utils/errors.js';
@@ -169,5 +170,19 @@ export function removeFriend(req: AuthRequest, res: Response) {
         }
         console.error(err);
         res.status(500).json({ message: 'Failed to remove friend' });
+    }
+}
+
+export function getAllFriends(req: AuthRequest, res: Response) {
+    const userId = req.user?.id;
+    if (typeof userId !== 'number') {
+        return res.status(500).json({ message: 'Something went wrong getting user ID' });
+    }
+    try {
+        const friends = getFriends(userId);
+        res.status(200).json({ message: 'Successfully fetched friends', friends });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to fetch friends' });
     }
 }

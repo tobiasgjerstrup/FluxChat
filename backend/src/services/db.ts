@@ -472,3 +472,27 @@ export function userRemove(user_id: number, friend_id: number) {
     );
     stmt.run(user_id, friend_id, friend_id, user_id);
 }
+
+export function getFriends(user_id: number) {
+    const stmt = db.prepare(
+        `SELECT DISTINCT result.id, result.username, result.status, result.relation_type
+         FROM (
+             SELECT
+                 CASE WHEN f.user_id = ? THEN u_friend.id ELSE u_user.id END AS id,
+                 CASE WHEN f.user_id = ? THEN u_friend.username ELSE u_user.username END AS username,
+                 f.status,
+                 CASE
+                     WHEN f.status = 'accepted' THEN 'accepted'
+                     WHEN f.user_id = ? THEN 'outgoing'
+                     ELSE 'incoming'
+                 END AS relation_type
+             FROM friends f
+             JOIN Users u_user ON f.user_id = u_user.id
+             JOIN Users u_friend ON f.friend_id = u_friend.id
+             WHERE (f.user_id = ? OR f.friend_id = ?)
+               AND f.status IN ('pending', 'accepted')
+         ) AS result
+         ORDER BY result.username ASC`,
+    );
+    return stmt.all(user_id, user_id, user_id, user_id, user_id);
+}
