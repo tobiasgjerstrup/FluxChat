@@ -14,6 +14,7 @@ export class AddFriend implements OnInit {
     public users = signal<{ id: number; username: string; FS_Status: string | null; FR_Status: string | null }[]>([]);
     public search = signal('');
     private searchTimeout?: number;
+    private lastQueryId = 0;
 
     ngOnInit() {
         this.getUsers();
@@ -23,14 +24,19 @@ export class AddFriend implements OnInit {
         if (this.searchTimeout) {
             clearTimeout(this.searchTimeout);
         }
+        this.lastQueryId++;
+        const queryId = this.lastQueryId;
         this.searchTimeout = window.setTimeout(() => {
-            this.getUsers();
+            this.getUsers(queryId);
         }, 250);
     }
 
-    public async getUsers() {
+    public async getUsers(queryId?: number) {
         try {
-            this.users.set((await this.api.getUsers(this.search() ?? undefined)).users);
+            const result = await this.api.getUsers(this.search() ?? undefined);
+            if (queryId === undefined || queryId === this.lastQueryId) {
+                this.users.set(result.users);
+            }
         } catch (error) {
             console.error('Error fetching users:', error);
         }
