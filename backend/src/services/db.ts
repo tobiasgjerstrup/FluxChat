@@ -260,7 +260,7 @@ export function getUsers(
     const params: (number | string)[] = [author_id, author_id, author_id];
 
     if (search) {
-        query += ' WHERE U.username LIKE ?';
+        query += ' AND U.username LIKE ?';
         params.push(`%${search}%`);
     }
 
