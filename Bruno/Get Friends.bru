@@ -1,0 +1,16 @@
+meta {
+  name: Get Friends
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{URL}}/api/users/friends
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

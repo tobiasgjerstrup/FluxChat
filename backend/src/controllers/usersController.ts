@@ -8,6 +8,7 @@ import {
     userAdd,
     userReject,
     userRemove,
+    getFriends,
 } from '../services/db.js';
 import { AuthRequest } from '../types/user.js';
 import { HttpError } from '../utils/errors.js';
@@ -26,8 +27,27 @@ export function getDMParticipants(req: AuthRequest, res: Response) {
 }
 
 export function getAllUsers(req: AuthRequest, res: Response) {
+    const author_id = req.user?.id;
+    if (typeof author_id !== 'number') {
+        return res.status(500).json({ message: 'Something went wrong getting user ID' });
+    }
     try {
-        const users = getUsers();
+        const MAX_LIMIT = 100;
+        const parsedLimit = req.query.limit ? parseInt(req.query.limit as string, 10) : MAX_LIMIT;
+        const parsedOffset = req.query.offset ? parseInt(req.query.offset as string, 10) : undefined;
+
+        if (parsedLimit !== undefined && (isNaN(parsedLimit) || parsedLimit < 0)) {
+            return res.status(400).json({ message: 'Limit must be a non-negative number' });
+        }
+        if (parsedOffset !== undefined && (isNaN(parsedOffset) || parsedOffset < 0)) {
+            return res.status(400).json({ message: 'Offset must be a non-negative number' });
+        }
+
+        const limit = parsedLimit !== undefined ? Math.min(parsedLimit, MAX_LIMIT) : undefined;
+        const offset = parsedOffset;
+        const search = req.query.search ? (req.query.search as string) : undefined;
+
+        const users = getUsers(author_id, { limit, offset, search });
         res.status(200).json({ message: 'Successfully fetched users', users });
     } catch (err) {
         console.error(err);
@@ -150,5 +170,19 @@ export function removeFriend(req: AuthRequest, res: Response) {
         }
         console.error(err);
         res.status(500).json({ message: 'Failed to remove friend' });
+    }
+}
+
+export function getAllFriends(req: AuthRequest, res: Response) {
+    const userId = req.user?.id;
+    if (typeof userId !== 'number') {
+        return res.status(500).json({ message: 'Something went wrong getting user ID' });
+    }
+    try {
+        const friends = getFriends(userId);
+        res.status(200).json({ message: 'Successfully fetched friends', friends });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to fetch friends' });
     }
 }

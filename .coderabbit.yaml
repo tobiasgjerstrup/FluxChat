@@ -1,3 +1,11 @@
 reviews:
-  auto_review:
-    drafts: true
+    auto_review:
+        enabled: true
+        base_branches:
+            - main
+            - develop
+        drafts: true
+    path_filters:
+        - '!docs/**'
+        - '!dist/**'
+        - '!snapshots/**'

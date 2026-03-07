@@ -44,3 +44,12 @@ html {
 .button:hover {
     background: mixins.$primary-hover;
 }
+.button:disabled {
+    background: mixins.$border;
+    color: mixins.$text-muted;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.button:disabled:hover {
+    background: mixins.$border;
+}

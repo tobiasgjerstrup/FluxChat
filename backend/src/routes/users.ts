@@ -7,6 +7,7 @@ import {
     sendFriendRequest,
     respondToFriendRequest,
     removeFriend,
+    getAllFriends,
 } from '../controllers/usersController.js';
 
 const router = Router();
@@ -18,7 +19,7 @@ router.get('/message/:channelId', jwtAuthMiddleware, getDirectMessage);
 router.post('/message/:userId', jwtAuthMiddleware, postDirectMessage);
 // ? Messages a group.
 // router.post('/message/group/:channelId', jwtAuthMiddleware, postDirectMessage);
-// router.get('/friends', jwtAuthMiddleware, getAllFriends);
+router.get('/friends', jwtAuthMiddleware, getAllFriends);
 router.post('/friends/send', jwtAuthMiddleware, sendFriendRequest);
 router.post('/friends/respond', jwtAuthMiddleware, respondToFriendRequest);
 router.post('/friends/remove', jwtAuthMiddleware, removeFriend);

@@ -59,9 +59,7 @@ export class Api {
         );
         this.JWT.set(response.token);
         localStorage.setItem('jwt', response.token);
-        console.log('Received refresh token:', response.refreshToken);
         this.JWT_REFRESH.set(response.refreshToken);
-        console.log('Set JWT_REFRESH signal:', this.JWT_REFRESH());
         localStorage.setItem('jwt_refresh', response.refreshToken);
         return response;
     }
@@ -89,12 +87,10 @@ export class Api {
     }
 
     public async register(username: string, email: string, password: string): Promise<any> {
-        await this.refreshTokenIfExpired();
         return firstValueFrom(
             this.http.post<any>(`${environment.ip}/api/auth/register`, { username, email, password }),
         );
     }
-
     public async getServers(): Promise<Server[]> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
@@ -157,14 +153,76 @@ export class Api {
         );
     }
 
-    public async getUsers(): Promise<{ users: { id: number; username: string }[] }> {
+    public async getUsers(
+        search?: string,
+    ): Promise<{ users: { id: number; username: string; FS_Status: string | null; FR_Status: string | null }[] }> {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        let url = `${environment.ip}/api/users?limit=15`;
+        if (search) {
+            url += `&search=${encodeURIComponent(search)}`;
+        }
+        return firstValueFrom(
+            this.http.get<{
+                users: { id: number; username: string; FS_Status: string | null; FR_Status: string | null }[];
+            }>(url, {
+                headers,
+            }),
+        );
+    }
+
+    public async handleFriendAction(userId: number, action: 'accept' | 'reject' | 'add'): Promise<{ message: string }> {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        if (action === 'add') {
+            return firstValueFrom(
+                this.http.post<{ message: string }>(
+                    `${environment.ip}/api/users/friends/send`,
+                    { userId: userId },
+                    { headers },
+                ),
+            );
+        } else {
+            return firstValueFrom(
+                this.http.post<{ message: string }>(
+                    `${environment.ip}/api/users/friends/respond`,
+                    { userId: userId, action: action },
+                    { headers },
+                ),
+            );
+        }
+    }
+
+    public async removeFriend(userId: number): Promise<{ message: string }> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
         return firstValueFrom(
-            this.http.get<{ users: { id: number; username: string }[] }>(`${environment.ip}/api/users`, { headers }),
+            this.http.post<{ message: string }>(
+                `${environment.ip}/api/users/friends/remove`,
+                { userId: userId },
+                { headers },
+            ),
         );
+    }
+
+    public async getFriends(): Promise<Array<{ id: number; username: string; status: string; relation_type: string }>> {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        const response = await firstValueFrom(
+            this.http.get<{
+                message: string;
+                friends: Array<{ id: number; username: string; status: string; relation_type: string }>;
+            }>(`${environment.ip}/api/users/friends`, { headers }),
+        );
+        return response.friends;
     }
 
     private async refreshTokenIfExpired(): Promise<void> {
