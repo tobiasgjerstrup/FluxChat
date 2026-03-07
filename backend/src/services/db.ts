@@ -463,7 +463,7 @@ export function userReject(user_id: number, friend_id: number) {
 export function userRemove(user_id: number, friend_id: number) {
     const isFriend = db
         .prepare(
-            "SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'accepted' OR status = 'pending'",
+            "SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status IN ('accepted', 'pending')",
         )
         .get(user_id, friend_id);
     if (!isFriend) {

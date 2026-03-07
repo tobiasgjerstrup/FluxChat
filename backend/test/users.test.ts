@@ -13,6 +13,8 @@ describe('Users API', () => {
 describe('Friend Requests', () => {
     const userA = { username: testUser.username + 'A', password: testUser.password, email: testUser.email + 'A' };
     const userB = { username: testUser.username + 'B', password: testUser.password, email: testUser.email + 'B' };
+    const userC = { username: testUser.username + 'C', password: testUser.password, email: testUser.email + 'C' };
+    const userD = { username: testUser.username + 'D', password: testUser.password, email: testUser.email + 'D' };
     let tokenA: string, tokenB: string, userIdA: number, userIdB: number;
 
     it('should register and login two users', async () => {
@@ -88,6 +90,38 @@ describe('Friend Requests', () => {
             .send({ userId: userIdB, action: 'reject' });
         expect(resDeny.status).toBe(201);
         expect(resDeny.body.message).toBe('Friend request responded');
+    });
+
+    it('should not remove non-friends due to unrelated pending request', async () => {
+        await request(server).post('/api/auth/register').send(userC);
+        const loginC = await request(server)
+            .post('/api/auth/login')
+            .send({ username: userC.username, password: userC.password });
+        const tokenC = loginC.body.token;
+        const userIdC = loginC.body.id;
+
+        await request(server).post('/api/auth/register').send(userD);
+        const loginD = await request(server)
+            .post('/api/auth/login')
+            .send({ username: userD.username, password: userD.password });
+        const userIdD = loginD.body.id;
+
+        expect(tokenC).toBeTruthy();
+        expect(userIdC).toBeTruthy();
+        expect(userIdD).toBeTruthy();
+
+        const unrelatedPending = await request(server)
+            .post('/api/users/friends/send')
+            .set('Authorization', `Bearer ${tokenC}`)
+            .send({ userId: userIdD });
+        expect(unrelatedPending.status).toBe(201);
+
+        const removeRes = await request(server)
+            .post('/api/users/friends/remove')
+            .set('Authorization', `Bearer ${tokenA}`)
+            .send({ userId: userIdB });
+        expect(removeRes.status).toBe(400);
+        expect(removeRes.body.message).toBe('You are not friends');
     });
 });
 
