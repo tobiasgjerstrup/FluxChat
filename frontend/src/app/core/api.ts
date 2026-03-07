@@ -197,6 +197,34 @@ export class Api {
         }
     }
 
+    public async removeFriend(userId: number): Promise<{ message: string }> {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        return firstValueFrom(
+            this.http.post<{ message: string }>(
+                `${environment.ip}/api/users/friends/remove`,
+                { userId: userId },
+                { headers },
+            ),
+        );
+    }
+
+    public async getFriends(): Promise<Array<{ id: number; username: string; status: string; relation_type: string }>> {
+        await this.refreshTokenIfExpired();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.JWT()}`,
+        });
+        const response = await firstValueFrom(
+            this.http.get<{
+                message: string;
+                friends: Array<{ id: number; username: string; status: string; relation_type: string }>;
+            }>(`${environment.ip}/api/users/friends`, { headers }),
+        );
+        return response.friends;
+    }
+
     private async refreshTokenIfExpired(): Promise<void> {
         const payload = this.getJWTPayload();
         if (!payload || !payload.exp) return;

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Signal, signal } from '@angular/core';
 import { Modal } from '../../shared/modal/modal';
 import { AddFriend } from './add-friend/add-friend';
+import { Api } from '../../core/api';
 
 @Component({
     selector: 'app-friends',
@@ -9,9 +10,35 @@ import { AddFriend } from './add-friend/add-friend';
     styleUrl: './friends.scss',
 })
 export class Friends {
+    constructor(private api: Api) {}
+
     public showAddFriendModal = false;
+    public friends = signal<Array<{ id: number; username: string; status: string; relation_type: string }>>([]);
 
     public async closeAddFriendModal() {
         this.showAddFriendModal = false;
+    }
+
+    async ngOnInit() {
+        const res = await this.api.getFriends();
+        this.friends.set(res);
+    }
+
+    public async acceptFriendRequest(userId: number) {
+        await this.api.addFriend(userId, 'accept');
+        const res = await this.api.getFriends();
+        this.friends.set(res);
+    }
+
+    public async rejectFriendRequest(userId: number) {
+        await this.api.addFriend(userId, 'reject');
+        const res = await this.api.getFriends();
+        this.friends.set(res);
+    }
+
+    public async removeFriend(userId: number) {
+        await this.api.removeFriend(userId);
+        const res = await this.api.getFriends();
+        this.friends.set(res);
     }
 }
