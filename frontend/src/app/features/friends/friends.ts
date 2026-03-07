@@ -40,7 +40,7 @@ export class Friends {
 
     public async rejectFriendRequest(userId: number) {
         try {
-            await this.api.removeFriend(userId);
+            await this.api.handleFriendAction(userId, 'reject');
             const res = await this.api.getFriends();
             this.friends.set(res);
         } catch (error) {

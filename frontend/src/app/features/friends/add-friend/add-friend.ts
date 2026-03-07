@@ -25,7 +25,7 @@ export class AddFriend implements OnInit {
         }
         this.searchTimeout = window.setTimeout(() => {
             this.getUsers();
-        }, 50);
+        }, 250);
     }
 
     public async getUsers() {

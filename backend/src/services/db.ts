@@ -276,7 +276,7 @@ export function getUsers(
     }
 
     const stmt = db.prepare(query);
-    return stmt.all(...params) as { id: number | bigint; username: string }[];
+    return stmt.all(...params) as { id: number | bigint; username: string; FS_Status: string | null; FR_Status: string | null }[];
 }
 
 // Helper: Find DMChannel by exact participant set
@@ -463,9 +463,9 @@ export function userReject(user_id: number, friend_id: number) {
 export function userRemove(user_id: number, friend_id: number) {
     const isFriend = db
         .prepare(
-            "SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status IN ('accepted', 'pending')",
+            "SELECT 1 FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?) AND status IN ('accepted', 'pending')",
         )
-        .get(user_id, friend_id);
+        .get(user_id, friend_id, friend_id, user_id);
     if (!isFriend) {
         throw new HttpError('You are not friends', 400);
     }
