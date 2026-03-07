@@ -6,7 +6,7 @@
         } @else if (user.FR_Status === 'pending') {
             <button class="button" (click)="friendAction(user.id, 'accept')">Accept</button>
             <button class="button" (click)="friendAction(user.id, 'reject')">Deny</button>
-        } @else if (user.FS_Status === 'accepted' && user.FR_Status === 'accepted') {
+        } @else if (user.FS_Status === 'accepted') {
             <button class="button" disabled>Friends</button>
         } @else {
             <button class="button" (click)="friendAction(user.id, 'add')">Add</button>
