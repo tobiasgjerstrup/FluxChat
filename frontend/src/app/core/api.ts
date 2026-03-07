@@ -173,7 +173,7 @@ export class Api {
         );
     }
 
-    public async addFriend(userId: number, action: 'accept' | 'reject' | 'add'): Promise<{ message: string }> {
+    public async handleFriendAction(userId: number, action: 'accept' | 'reject' | 'add'): Promise<{ message: string }> {
         await this.refreshTokenIfExpired();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,

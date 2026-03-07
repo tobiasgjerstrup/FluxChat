@@ -38,7 +38,7 @@ export class AddFriend implements OnInit {
 
     public async friendAction(userId: number, action: 'accept' | 'reject' | 'add') {
         try {
-            const res = await this.api.addFriend(userId, action);
+            const res = await this.api.handleFriendAction(userId, action);
             if (res.message.toLowerCase().includes('friend request sent')) {
                 this.users.update((users) =>
                     users.map((user) =>

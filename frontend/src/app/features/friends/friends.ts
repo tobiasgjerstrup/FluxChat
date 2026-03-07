@@ -1,4 +1,4 @@
-import { Component, Signal, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Modal } from '../../shared/modal/modal';
 import { AddFriend } from './add-friend/add-friend';
 import { Api } from '../../core/api';
@@ -30,7 +30,7 @@ export class Friends {
 
     public async acceptFriendRequest(userId: number) {
         try {
-            await this.api.addFriend(userId, 'accept');
+            await this.api.handleFriendAction(userId, 'accept');
             const res = await this.api.getFriends();
             this.friends.set(res);
         } catch (error) {

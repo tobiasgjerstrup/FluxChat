@@ -1,5 +1,5 @@
 <input type="text" class="input" placeholder="Search for users..." [(ngModel)]="search" (input)="onSearchInput()" />
-@for (user of users(); track $index) {
+@for (user of users(); track user.id) {
     <div class="user">
         @if (user.FS_Status === 'pending') {
             <button class="button" disabled>Pending</button>
