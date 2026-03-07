@@ -25,20 +25,32 @@ export class Friends {
     }
 
     public async acceptFriendRequest(userId: number) {
-        await this.api.addFriend(userId, 'accept');
-        const res = await this.api.getFriends();
-        this.friends.set(res);
+        try {
+            await this.api.addFriend(userId, 'accept');
+            const res = await this.api.getFriends();
+            this.friends.set(res);
+        } catch (error) {
+            console.error('Failed to accept friend request:', error);
+        }
     }
 
     public async rejectFriendRequest(userId: number) {
-        await this.api.addFriend(userId, 'reject');
-        const res = await this.api.getFriends();
-        this.friends.set(res);
+        try {
+            await this.api.removeFriend(userId);
+            const res = await this.api.getFriends();
+            this.friends.set(res);
+        } catch (error) {
+            console.error('Failed to reject friend request:', error);
+        }
     }
 
     public async removeFriend(userId: number) {
-        await this.api.removeFriend(userId);
-        const res = await this.api.getFriends();
-        this.friends.set(res);
+        try {
+            await this.api.removeFriend(userId);
+            const res = await this.api.getFriends();
+            this.friends.set(res);
+        } catch (error) {
+            console.error('Failed to remove friend:', error);
+        }
     }
 }
