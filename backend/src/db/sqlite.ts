@@ -271,6 +271,14 @@ export async function sqliteDBSetup() {
             );`,
     ).run();
 
+    db.prepare(
+        'CREATE INDEX IF NOT EXISTS idx_friends_user_friend_updated ON Friends (user_id, friend_id, updated_at DESC);',
+    ).run();
+
+    db.prepare(
+        'CREATE INDEX IF NOT EXISTS idx_friends_friend_user_updated ON Friends (friend_id, user_id, updated_at DESC);',
+    ).run();
+
     db.prepare(`DELETE FROM RefreshTokens WHERE expires_at < datetime('now')`).run();
     return db;
 }

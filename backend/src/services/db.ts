@@ -269,14 +269,23 @@ export function getUsers(
     if (limit !== undefined) {
         query += ' LIMIT ?';
         params.push(limit);
-        if (offset !== undefined) {
-            query += ' OFFSET ?';
-            params.push(offset);
-        }
+    } else if (offset !== undefined) {
+        query += ' LIMIT ?';
+        params.push(-1);
+    }
+
+    if (offset !== undefined) {
+        query += ' OFFSET ?';
+        params.push(offset);
     }
 
     const stmt = db.prepare(query);
-    return stmt.all(...params) as { id: number | bigint; username: string; FS_Status: string | null; FR_Status: string | null }[];
+    return stmt.all(...params) as {
+        id: number | bigint;
+        username: string;
+        FS_Status: string | null;
+        FR_Status: string | null;
+    }[];
 }
 
 // Helper: Find DMChannel by exact participant set
