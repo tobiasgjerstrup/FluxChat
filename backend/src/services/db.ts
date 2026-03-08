@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import type { User } from '@flux/shared';
+import type { RegisterBody, User } from '@flux/shared';
 
 export interface Server {
     id: number;
@@ -42,7 +42,7 @@ export function saveMessage({
     return { id: info.lastInsertRowid, content, author_id, channel_id, created_at: new Date().toISOString() };
 }
 
-export async function createUser({ username, email, password }: Omit<User, 'id'>) {
+export async function createUser({ username, email, password }: RegisterBody) {
     const password_hash = await bcrypt.hash(password, 10);
     try {
         const stmt = db.prepare(
@@ -127,18 +127,18 @@ export function deleteRefreshToken(token: string) {
     stmt.run(token);
 }
 
-export function getUsernameById(userId: number) {
+export function getUsernameById(userId: User['id']) {
     const stmt = db.prepare('SELECT username FROM Users WHERE id = ?');
     const row = stmt.get(userId) as { username: string } | undefined;
     return row ? row.username : null;
 }
 
-export function addServerMember({ server_id, user_id }: { server_id: number | bigint; user_id: number }) {
+export function addServerMember({ server_id, user_id }: { server_id: number | bigint; user_id: User['id'] }) {
     const stmt = db.prepare("INSERT INTO ServerMembers (server_id, user_id, joined_at) VALUES (?, ?, datetime('now'))");
     stmt.run(server_id, user_id);
 }
 
-export function getServerUserIsMemberOf(user_id: number): Server[] {
+export function getServerUserIsMemberOf(user_id: User['id']): Server[] {
     const stmt = db.prepare(
         'SELECT * FROM Servers WHERE id IN (SELECT server_id FROM ServerMembers WHERE user_id = ?) ORDER BY created_at ASC',
     );
@@ -154,7 +154,7 @@ export function createServerInvite({
     temporary,
 }: {
     server_id: number;
-    creator_id: number;
+    creator_id: User['id'];
     channel_id?: number;
     max_uses?: number;
     expires_at?: string;
@@ -205,7 +205,7 @@ export function getServerInviteByCode(code: string) {
     return invite;
 }
 
-export function joinServerWithInvite(inviteCode: string, user_id: number) {
+export function joinServerWithInvite(inviteCode: string, user_id: User['id']) {
     const invite = getServerInviteByCode(inviteCode);
     if (!invite) {
         throw new HttpError('Invalid invite code', 400);
@@ -233,7 +233,7 @@ export function incrementInviteUses(inviteId: number) {
 }
 
 export function getUsers(
-    author_id: number,
+    author_id: User['id'],
     { limit, offset, search }: { limit?: number; offset?: number; search?: string },
 ) {
     // ? FR = Friends Requests Received, FS = Friends Requests Sent

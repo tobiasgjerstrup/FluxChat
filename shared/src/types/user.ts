@@ -6,5 +6,4 @@ export type User = {
 };
 
 export type RegisterBody = Omit<User, 'id'>;
-
-export type LoginBody = Omit<RegisterBody, 'email' | 'id'>;
+export type LoginBody = Omit<User, 'email' | 'id'>;
