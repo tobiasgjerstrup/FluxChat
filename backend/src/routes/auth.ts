@@ -4,17 +4,19 @@ import config from '../config.js';
 import { createUser, findUserByUsername, getRefreshToken, storeRefreshToken } from '../services/db.js';
 import bcrypt from 'bcrypt';
 import { HttpError } from '../utils/errors.js';
+import { LoginBody, RegisterBody } from '@flux/shared';
 
 const router = Router();
 
 // Register endpoint
 router.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: 'Missing username, email, or password' });
+    const body: unknown = req.body;
+    if (!isRegisterBody(body)) {
+        return res.status(400).json({ error: 'Invalid request body' });
     }
+
     try {
-        const user = await createUser({ username, email, password });
+        const user = await createUser(body);
         return res.status(201).json({ id: user.id, username: user.username, email: user.email });
     } catch (err) {
         if (err instanceof HttpError) {
@@ -27,15 +29,16 @@ router.post('/register', async (req, res) => {
 
 // Login endpoint
 router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Missing username or password' });
+    const body: unknown = req.body;
+    if (!isLoginBody(body)) {
+        return res.status(400).json({ error: 'Invalid request body' });
     }
-    const user = findUserByUsername(username);
+
+    const user = findUserByUsername(body.username);
     if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
     }
-    const valid = await bcrypt.compare(password, user.password_hash);
+    const valid = await bcrypt.compare(body.password, user.password_hash);
     if (!valid) {
         return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -101,3 +104,15 @@ router.post('/refresh', (req, res) => {
 });
 
 export default router;
+
+function isRegisterBody(value: unknown): value is RegisterBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return typeof b.username === 'string' && typeof b.email === 'string' && typeof b.password === 'string';
+}
+
+function isLoginBody(value: unknown): value is LoginBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return typeof b.username === 'string' && typeof b.password === 'string';
+}

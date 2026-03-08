@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import type { User } from '@flux/shared';
 
 export interface Server {
     id: number;
@@ -41,7 +42,7 @@ export function saveMessage({
     return { id: info.lastInsertRowid, content, author_id, channel_id, created_at: new Date().toISOString() };
 }
 
-export async function createUser({ username, email, password }: { username: string; email: string; password: string }) {
+export async function createUser({ username, email, password }: Omit<User, 'id'>) {
     const password_hash = await bcrypt.hash(password, 10);
     try {
         const stmt = db.prepare(
