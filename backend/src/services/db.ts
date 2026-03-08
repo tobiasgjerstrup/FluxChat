@@ -1,13 +1,27 @@
 import Database from 'better-sqlite3';
-import type { RegisterBody, User } from '@flux/shared';
+import type { RegisterBody } from '@flux/shared';
+import type {
+    DBChannel,
+    DBCreateChannel,
+    DBCreateDMMessage,
+    DBCreateRefreshToken,
+    DBCreateServer,
+    DBCreateServerInvite,
+    DBDMChannel,
+    DBDMMessage,
+    DBFriendStatus,
+    DBMessage,
+    DBRefreshToken,
+    DBServer,
+    DBServerInvite,
+    DBUser,
+} from '../model/db-types.js';
 
-export interface Server {
-    id: number;
-    owner_id: number;
-    name: string;
-    icon_url: string | null;
-    created_at: string;
-}
+type QueryParams = {
+    limit?: number;
+    offset?: number;
+    search?: string;
+};
 
 import { sqliteDBSetup } from '../db/sqlite.js';
 import bcrypt from 'bcrypt';
@@ -23,23 +37,25 @@ export async function getMessagesFromChannel(channelId: number) {
         WHERE messages.channel_id = ?
         ORDER BY messages.created_at ASC
     `);
-    return stmt.all(channelId);
+    return stmt.all(channelId) as (DBMessage & { author_username: DBUser['username'] })[];
 }
 
 export function saveMessage({
     content,
     author_id,
     channel_id,
-}: {
-    content: string;
-    author_id: number;
-    channel_id: number;
-}) {
+}: Pick<DBCreateDMMessage, 'content' | 'author_id'> & { channel_id: DBChannel['id'] }) {
     const stmt = db.prepare(
         "INSERT INTO messages (content, author_id, channel_id, created_at) VALUES (?, ?, ?, datetime('now'))",
     );
     const info = stmt.run(content, author_id, channel_id);
-    return { id: info.lastInsertRowid, content, author_id, channel_id, created_at: new Date().toISOString() };
+    return {
+        id: Number(info.lastInsertRowid),
+        content,
+        author_id,
+        channel_id,
+        created_at: new Date().toISOString(),
+    } as Pick<DBMessage, 'id' | 'content' | 'author_id' | 'channel_id' | 'created_at'>;
 }
 
 export async function createUser({ username, email, password }: RegisterBody) {
@@ -60,9 +76,7 @@ export async function createUser({ username, email, password }: RegisterBody) {
 
 export function findUserByUsername(username: string) {
     const stmt = db.prepare('SELECT * FROM Users WHERE username = ?');
-    const user = stmt.get(username) as
-        | undefined
-        | { id: number; username: string; email: string; password_hash: string };
+    const user = stmt.get(username) as DBUser | undefined;
     return user;
 }
 
@@ -70,17 +84,16 @@ export function createServer({
     name,
     owner_id,
     icon_url = null,
-}: {
-    name: string;
-    owner_id: number;
-    icon_url?: string | null;
-}) {
+}: Omit<DBCreateServer, 'icon_url'> & Partial<Pick<DBCreateServer, 'icon_url'>>) {
     try {
         const stmt = db.prepare(
             "INSERT INTO Servers (name, owner_id, icon_url, created_at) VALUES (?, ?, ?, datetime('now'))",
         );
         const info = stmt.run(name, owner_id, icon_url);
-        return { id: info.lastInsertRowid, name, owner_id, icon_url };
+        return { id: Number(info.lastInsertRowid), name, owner_id, icon_url } as Pick<
+            DBServer,
+            'id' | 'name' | 'owner_id' | 'icon_url'
+        >;
     } catch (err) {
         if (err instanceof Database.SqliteError && err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
             throw new HttpError('Server name already exists', 400);
@@ -90,23 +103,26 @@ export function createServer({
 }
 
 export function getAllServers() {
-    return db.prepare('SELECT * FROM Servers ORDER BY created_at ASC').all();
+    return db.prepare('SELECT * FROM Servers ORDER BY created_at ASC').all() as DBServer[];
 }
 
-export function createChannel({ server_id, name, type }: { server_id: number; name: string; type: string }) {
+export function createChannel({ server_id, name, type }: Pick<DBCreateChannel, 'server_id' | 'name' | 'type'>) {
     const stmt = db.prepare(
         "INSERT INTO Channels (server_id, name, type, created_at) VALUES (?, ?, ?, datetime('now'))",
     );
     const info = stmt.run(server_id, name, type);
-    return { id: info.lastInsertRowid, server_id, name, type };
+    return { id: Number(info.lastInsertRowid), server_id, name, type } as Pick<
+        DBChannel,
+        'id' | 'server_id' | 'name' | 'type'
+    >;
 }
 
-export function getChannelsFromServer(serverId: number) {
+export function getChannelsFromServer(serverId: DBServer['id']) {
     const stmt = db.prepare('SELECT * FROM Channels WHERE server_id = ? ORDER BY created_at ASC');
-    return stmt.all(serverId);
+    return stmt.all(serverId) as DBChannel[];
 }
 
-export function storeRefreshToken({ user_id, token }: { user_id: number; token: string }) {
+export function storeRefreshToken({ user_id, token }: Pick<DBCreateRefreshToken, 'user_id' | 'token'>) {
     const stmt = db.prepare(
         "INSERT INTO RefreshTokens (user_id, token, expires_at, created_at) VALUES (?, ?, ?, datetime('now'))",
     );
@@ -116,9 +132,7 @@ export function storeRefreshToken({ user_id, token }: { user_id: number; token: 
 
 export function getRefreshToken(token: string) {
     const stmt = db.prepare('SELECT * FROM RefreshTokens WHERE token = ?');
-    const refreshToken = stmt.get(token) as
-        | undefined
-        | { id: number; user_id: number; token: string; expires_at: string; created_at: string };
+    const refreshToken = stmt.get(token) as DBRefreshToken | undefined;
     return refreshToken;
 }
 
@@ -127,22 +141,22 @@ export function deleteRefreshToken(token: string) {
     stmt.run(token);
 }
 
-export function getUsernameById(userId: User['id']) {
+export function getUsernameById(userId: DBUser['id']) {
     const stmt = db.prepare('SELECT username FROM Users WHERE id = ?');
     const row = stmt.get(userId) as { username: string } | undefined;
     return row ? row.username : null;
 }
 
-export function addServerMember({ server_id, user_id }: { server_id: number | bigint; user_id: User['id'] }) {
+export function addServerMember({ server_id, user_id }: { server_id: DBServer['id']; user_id: DBUser['id'] }) {
     const stmt = db.prepare("INSERT INTO ServerMembers (server_id, user_id, joined_at) VALUES (?, ?, datetime('now'))");
     stmt.run(server_id, user_id);
 }
 
-export function getServerUserIsMemberOf(user_id: User['id']): Server[] {
+export function getServerUserIsMemberOf(user_id: DBUser['id']): DBServer[] {
     const stmt = db.prepare(
         'SELECT * FROM Servers WHERE id IN (SELECT server_id FROM ServerMembers WHERE user_id = ?) ORDER BY created_at ASC',
     );
-    return stmt.all(user_id) as Server[];
+    return stmt.all(user_id) as DBServer[];
 }
 
 export function createServerInvite({
@@ -152,14 +166,8 @@ export function createServerInvite({
     max_uses,
     expires_at,
     temporary,
-}: {
-    server_id: number;
-    creator_id: User['id'];
-    channel_id?: number;
-    max_uses?: number;
-    expires_at?: string;
-    temporary?: boolean;
-}) {
+}: Pick<DBCreateServerInvite, 'server_id' | 'creator_id'> &
+    Partial<Pick<DBCreateServerInvite, 'channel_id' | 'max_uses' | 'expires_at' | 'temporary'>>) {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     const stmt = db.prepare(
         "INSERT INTO ServerInvites (code, server_id, channel_id, creator_id, max_uses, expires_at, temporary, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
@@ -174,38 +182,24 @@ export function createServerInvite({
         temporary ? 1 : 0,
     );
     return {
-        id: info.lastInsertRowid,
+        id: Number(info.lastInsertRowid),
         code,
         server_id,
         channel_id: channel_id || null,
         creator_id,
         max_uses: max_uses || null,
         expires_at: expires_at || null,
-        temporary: temporary ? 1 : 0,
+        temporary: Boolean(temporary),
     };
 }
 
 export function getServerInviteByCode(code: string) {
     const stmt = db.prepare('SELECT * FROM ServerInvites WHERE code = ?');
-    const invite = stmt.get(code) as
-        | undefined
-        | {
-              id: number;
-              code: string;
-              server_id: number;
-              channel_id: number | null;
-              creator_id: number;
-              max_uses: number | null;
-              uses: number;
-              expires_at: string | null;
-              temporary: boolean;
-              revoked: boolean;
-              created_at: string;
-          };
+    const invite = stmt.get(code) as DBServerInvite | undefined;
     return invite;
 }
 
-export function joinServerWithInvite(inviteCode: string, user_id: User['id']) {
+export function joinServerWithInvite(inviteCode: string, user_id: DBUser['id']) {
     const invite = getServerInviteByCode(inviteCode);
     if (!invite) {
         throw new HttpError('Invalid invite code', 400);
@@ -232,10 +226,7 @@ export function incrementInviteUses(inviteId: number) {
     stmt.run(inviteId);
 }
 
-export function getUsers(
-    author_id: User['id'],
-    { limit, offset, search }: { limit?: number; offset?: number; search?: string },
-) {
+export function getUsers(author_id: DBUser['id'], { limit, offset, search }: QueryParams) {
     // ? FR = Friends Requests Received, FS = Friends Requests Sent
     let query = `
         SELECT
@@ -281,16 +272,14 @@ export function getUsers(
     }
 
     const stmt = db.prepare(query);
-    return stmt.all(...params) as {
-        id: number | bigint;
-        username: string;
-        FS_Status: string | null;
-        FR_Status: string | null;
-    }[];
+    return stmt.all(...params) as (Pick<DBUser, 'id' | 'username'> & {
+        FS_Status: DBFriendStatus | null;
+        FR_Status: DBFriendStatus | null;
+    })[];
 }
 
 // Helper: Find DMChannel by exact participant set
-function findDMChannelByParticipants(userIds: number[]): bigint | number | null {
+function findDMChannelByParticipants(userIds: DBUser['id'][]): DBDMChannel['id'] | null {
     const sortedUserIds = [...userIds].map(Number).sort((a, b) => a - b);
     const channels = db
         .prepare(
@@ -300,11 +289,11 @@ function findDMChannelByParticipants(userIds: number[]): bigint | number | null 
             GROUP BY dm_channel_id
             HAVING COUNT(*) = ?`,
         )
-        .all(...userIds, userIds.length) as { dm_channel_id: number | bigint }[];
+        .all(...userIds, userIds.length) as { dm_channel_id: DBDMChannel['id'] }[];
     for (const row of channels) {
         const participants = db
             .prepare('SELECT user_id FROM DMParticipants WHERE dm_channel_id = ?')
-            .all(row.dm_channel_id) as { user_id: number | bigint }[];
+            .all(row.dm_channel_id) as { user_id: DBUser['id'] }[];
         const ids = participants.map((p) => Number(p.user_id)).sort((a, b) => a - b);
         if (ids.length === sortedUserIds.length && ids.every((id, i) => id === sortedUserIds[i])) {
             return row.dm_channel_id;
@@ -317,11 +306,7 @@ export function sendDirectMessage({
     author_id,
     participant_ids,
     content,
-}: {
-    author_id: number;
-    participant_ids: number[];
-    content: string;
-}) {
+}: Pick<DBCreateDMMessage, 'author_id' | 'content'> & { participant_ids: DBUser['id'][] }) {
     if (participant_ids.length < 2) {
         throw new HttpError('At least 2 participants are required for a DM', 400);
     }
@@ -335,7 +320,7 @@ export function sendDirectMessage({
     if (!dm_channel_id) {
         const stmt = db.prepare("INSERT INTO DMChannels (is_group, created_at) VALUES (?, datetime('now'))");
         const info = stmt.run(participant_ids.length > 2 ? 1 : 0);
-        dm_channel_id = info.lastInsertRowid as number | bigint;
+        dm_channel_id = Number(info.lastInsertRowid);
         // Add participants
         const addStmt = db.prepare('INSERT INTO DMParticipants (dm_channel_id, user_id) VALUES (?, ?)');
         for (const user_id of participant_ids) {
@@ -348,15 +333,15 @@ export function sendDirectMessage({
     );
     const info = msgStmt.run(dm_channel_id, author_id, content);
     return {
-        id: info.lastInsertRowid as number | bigint,
+        id: Number(info.lastInsertRowid),
         dm_channel_id,
         author_id,
         content,
         created_at: new Date().toISOString(),
-    };
+    } as Pick<DBDMMessage, 'id' | 'dm_channel_id' | 'author_id' | 'content' | 'created_at'>;
 }
 
-export function getMessagesForDMChannel(dm_channel_id: number | bigint) {
+export function getMessagesForDMChannel(dm_channel_id: DBDMChannel['id']) {
     const stmt = db.prepare(`
         SELECT m.*, u.username AS author_username
         FROM DMMessages m
@@ -364,17 +349,10 @@ export function getMessagesForDMChannel(dm_channel_id: number | bigint) {
         WHERE m.dm_channel_id = ?
         ORDER BY m.created_at ASC
     `);
-    return stmt.all(dm_channel_id) as {
-        id: number | bigint;
-        dm_channel_id: number | bigint;
-        author_id: number | bigint;
-        content: string;
-        created_at: string;
-        author_username: string;
-    }[];
+    return stmt.all(dm_channel_id) as (DBDMMessage & { author_username: DBUser['username'] })[];
 }
 
-export function getParticipantsForDMChannel(dm_channel_id: number | bigint) {
+export function getParticipantsForDMChannel(dm_channel_id: DBDMChannel['id']) {
     const stmt = db.prepare(`
         SELECT u.id, u.username
         FROM DMParticipants p
@@ -382,10 +360,10 @@ export function getParticipantsForDMChannel(dm_channel_id: number | bigint) {
         WHERE p.dm_channel_id = ?
         ORDER BY u.username ASC
     `);
-    return stmt.all(dm_channel_id) as { id: number | bigint; username: string }[];
+    return stmt.all(dm_channel_id) as Pick<DBUser, 'id' | 'username'>[];
 }
 
-export function userAdd(user_id: number, friend_id: number) {
+export function userAdd(user_id: DBUser['id'], friend_id: DBUser['id']) {
     const isSent = db
         .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
         .get(user_id, friend_id);
@@ -419,7 +397,7 @@ export function userAdd(user_id: number, friend_id: number) {
     stmt.run(user_id, friend_id);
 }
 
-export function userBlock(user_id: number, friend_id: number) {
+export function userBlock(user_id: DBUser['id'], friend_id: DBUser['id']) {
     const isBlocked = db
         .prepare(
             "SELECT 1 FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status = 'blocked'",
@@ -441,7 +419,7 @@ export function userBlock(user_id: number, friend_id: number) {
     stmt.run(user_id, friend_id);
 }
 
-export function userAccept(user_id: number, friend_id: number) {
+export function userAccept(user_id: DBUser['id'], friend_id: DBUser['id']) {
     const isReceived = db
         .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
         .get(friend_id, user_id);
@@ -459,7 +437,7 @@ export function userAccept(user_id: number, friend_id: number) {
     reciprocalStmt.run(user_id, friend_id);
 }
 
-export function userReject(user_id: number, friend_id: number) {
+export function userReject(user_id: DBUser['id'], friend_id: DBUser['id']) {
     const isReceived = db
         .prepare("SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ? AND status = 'pending'")
         .get(friend_id, user_id);
@@ -470,7 +448,7 @@ export function userReject(user_id: number, friend_id: number) {
     stmt.run(friend_id, user_id);
 }
 
-export function userRemove(user_id: number, friend_id: number) {
+export function userRemove(user_id: DBUser['id'], friend_id: DBUser['id']) {
     const isFriend = db
         .prepare(
             "SELECT 1 FROM friends WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND status IN ('accepted', 'pending')",
@@ -485,7 +463,7 @@ export function userRemove(user_id: number, friend_id: number) {
     stmt.run(user_id, friend_id, friend_id, user_id);
 }
 
-export function getFriends(user_id: number) {
+export function getFriends(user_id: DBUser['id']) {
     const stmt = db.prepare(
         `SELECT DISTINCT result.id, result.username, result.status, result.relation_type
          FROM (
@@ -506,5 +484,10 @@ export function getFriends(user_id: number) {
          ) AS result
          ORDER BY result.username ASC`,
     );
-    return stmt.all(user_id, user_id, user_id, user_id, user_id);
+    return stmt.all(user_id, user_id, user_id, user_id, user_id) as Array<
+        Pick<DBUser, 'id' | 'username'> & {
+            status: DBFriendStatus;
+            relation_type: 'accepted' | 'outgoing' | 'incoming';
+        }
+    >;
 }

@@ -5,6 +5,7 @@ on:
         branches: [main, develop]
         paths:
             - 'backend/**'
+            - 'shared/**'
             - '.github/workflows/backend-tests.yml'
 
 jobs:
