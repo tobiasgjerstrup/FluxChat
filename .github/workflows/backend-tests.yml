@@ -20,15 +20,13 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 24
+                  cache: npm
 
             - name: Install dependencies
-              working-directory: backend
-              run: npm install
+              run: npm ci
 
             - name: Run tests
-              working-directory: backend
-              run: npm test
+              run: npm run test -w backend
 
             - name: Lint backend
-              working-directory: backend
-              run: npx eslint . --max-warnings=0
+              run: npm run lint -w backend
