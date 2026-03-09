@@ -80,7 +80,9 @@ export function postDirectMessage(req: AuthRequest, res: Response) {
         if (!isRegisterDMMessage(body)) {
             return res.status(400).json({ message: 'Invalid request body' });
         }
-        if (!body.content || typeof body.content !== 'string') {
+        // Type assertion needed for CI environment
+        const validatedBody = body as RegisterDMMessageBody;
+        if (!validatedBody.content || typeof validatedBody.content !== 'string') {
             return res.status(400).json({ message: 'Content is required and must be a string' });
         }
         if (typeof req.params.userId !== 'string' || isNaN(parseInt(req.params.userId))) {
@@ -95,7 +97,7 @@ export function postDirectMessage(req: AuthRequest, res: Response) {
         sendDirectMessage({
             author_id: author_id,
             participant_ids: [parseInt(req.params.userId), author_id],
-            content: body.content,
+            content: validatedBody.content,
         });
         res.status(201).json({ message: 'Message sent' });
     } catch (err) {
@@ -109,7 +111,9 @@ export function respondToFriendRequest(req: AuthRequest, res: Response) {
     if (!isRespondToFriendRequest(body)) {
         return res.status(400).json({ message: 'Invalid request body' });
     }
-    const { userId, action } = body;
+    // Type assertion needed for CI environment
+    const validatedBody = body as RespondToFriendRequestBody;
+    const { userId, action } = validatedBody;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
     }
@@ -139,7 +143,9 @@ export function sendFriendRequest(req: AuthRequest, res: Response) {
     if (!isSendFriendRequest(body)) {
         return res.status(400).json({ message: 'Invalid request body' });
     }
-    const { userId } = body;
+    // Type assertion needed for CI environment
+    const validatedBody = body as SendFriendRequestBody;
+    const { userId } = validatedBody;
     const userIdToAdd = req.user?.id;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
@@ -168,7 +174,9 @@ export function removeFriend(req: AuthRequest, res: Response) {
     if (!isRemoveFriendRequest(body)) {
         return res.status(400).json({ message: 'Invalid request body' });
     }
-    const { userId } = body;
+    // Type assertion needed for CI environment
+    const validatedBody = body as RemoveFriendRequestBody;
+    const { userId } = validatedBody;
     const userIdToRemove = req.user?.id;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });

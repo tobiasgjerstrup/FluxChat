@@ -28,7 +28,9 @@ export function postChannel(req: AuthRequest, res: Response) {
         if (!isRegisterChannel(body)) {
             return res.status(400).json({ error: 'Invalid request body' });
         }
-        const { server_id, name, type } = body;
+        // Type assertion needed for CI environment
+        const validatedBody = body as RegisterChannelBody;
+        const { server_id, name, type } = validatedBody;
         const owner_id = req.user?.id;
         if (typeof owner_id !== 'number') {
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
