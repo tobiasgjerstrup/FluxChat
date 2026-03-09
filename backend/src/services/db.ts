@@ -54,18 +54,13 @@ export function saveMessage({
 }
 
 export async function createUser({ username, email, password }: RegisterBody) {
-    // Type assertion needed for CI environment
-    const typedPassword = password as string;
-    const password_hash = await bcrypt.hash(typedPassword, 10);
+    const password_hash = await bcrypt.hash(password, 10);
     try {
         const stmt = db.prepare(
             "INSERT INTO Users (username, email, password_hash, created_at) VALUES (?, ?, ?, datetime('now'))",
         );
         const info = stmt.run(username, email, password_hash);
-        const userId = Number(info.lastInsertRowid) as number;
-        const typedUsername = username as string;
-        const typedEmail = email as string;
-        return { id: userId, username: typedUsername, email: typedEmail };
+        return { id: Number(info.lastInsertRowid), username, email };
     } catch (err) {
         if (err instanceof Database.SqliteError && err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
             throw new HttpError('Username or email already exists', 400);

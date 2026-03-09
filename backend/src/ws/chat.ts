@@ -49,22 +49,20 @@ export function setupWebSocket(server: HttpServer) {
                     console.error('Invalid message format from client', parsed);
                     return;
                 }
-                // Type assertion needed for CI environment
-                const message = parsed as WebSocketMessage;
+                const message = parsed;
 
                 // Log all signaling messages
                 if (['webrtc-offer', 'webrtc-answer', 'webrtc-ice-candidate'].includes(message.type)) {
-                    const targetId = message.targetId as number | string | undefined;
-                    const fromUser = (ws as WebSocketData).userId as number | undefined;
-                    const messageType = message.type as string;
+                    const targetId = message.targetId;
+                    const fromUser = (ws as WebSocketData).userId;
                     const fromUserStr = fromUser !== undefined ? String(fromUser) : 'unknown';
                     const targetIdStr = targetId !== undefined ? String(targetId) : 'unknown';
                     console.log(
-                        `[SIGNALING] type=${messageType} from=${fromUserStr} to=${targetIdStr} payload=`,
+                        `[SIGNALING] type=${message.type} from=${fromUserStr} to=${targetIdStr} payload=`,
                         JSON.stringify(message),
                     );
                     if (!targetId) {
-                        console.warn(`[SIGNALING] No targetId for message type=${messageType} from=${fromUserStr}`);
+                        console.warn(`[SIGNALING] No targetId for message type=${message.type} from=${fromUserStr}`);
                         return;
                     }
                     // Find the target client by a custom property (e.g., userId)
@@ -78,19 +76,18 @@ export function setupWebSocket(server: HttpServer) {
 
                     if (targetClient) {
                         targetClient.send(JSON.stringify(message));
-                        console.log(`[SIGNALING] Relayed type=${messageType} from=${fromUserStr} to=${targetIdStr}`);
+                        console.log(`[SIGNALING] Relayed type=${message.type} from=${fromUserStr} to=${targetIdStr}`);
                     } else {
                         console.warn(
-                            `[SIGNALING] No client found for targetId=${targetIdStr} (from=${fromUserStr}, type=${messageType})`,
+                            `[SIGNALING] No client found for targetId=${targetIdStr} (from=${fromUserStr}, type=${message.type})`,
                         );
                     }
                 }
 
                 // Optionally: handle user registration to associate ws with userId
-                const messageUserId = message.userId as number | string | null | undefined;
-                if (message.type === 'register' && typeof messageUserId === 'number') {
-                    (ws as WebSocketData).userId = messageUserId as number;
-                    console.log(`[REGISTER] userId=${String(messageUserId)} associated with ws`);
+                if (message.type === 'register' && typeof message.userId === 'number') {
+                    (ws as WebSocketData).userId = message.userId;
+                    console.log(`[REGISTER] userId=${String(message.userId)} associated with ws`);
                 }
             } catch (err) {
                 console.error('Invalid JSON from client', err);

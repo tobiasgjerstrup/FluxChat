@@ -22,8 +22,6 @@ export default defineConfig([
         files: ['**/*.ts'],
         rules: {
             '@typescript-eslint/no-duplicate-type-constituents': 'error',
-            // Allow type assertions after type guards for cross-environment compatibility
-            '@typescript-eslint/no-unnecessary-type-assertion': 'off',
         },
     },
 ]);

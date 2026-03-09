@@ -28,9 +28,7 @@ export function postMessage(req: AuthRequest, res: Response) {
         if (!isRegisterMessage(body)) {
             return res.status(400).json({ error: 'Invalid request body' });
         }
-        // Type assertion needed for CI environment
-        const validatedBody = body as RegisterMessageBody;
-        const { content, channel_id } = validatedBody;
+        const { content, channel_id } = body;
         if (!content || !channel_id) return res.status(400).json({ error: 'Content and channel ID are required' });
         const author_id = req.user?.id; // req.user set by JWT middleware
         if (typeof author_id !== 'number') {

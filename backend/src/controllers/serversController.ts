@@ -35,9 +35,7 @@ export function postServer(req: AuthRequest, res: Response) {
         if (!isRegisterServer(body)) {
             return res.status(400).json({ error: 'Invalid request body' });
         }
-        // Type assertion needed for CI environment
-        const validatedBody = body as RegisterServerBody;
-        const { name, icon_url } = validatedBody;
+        const { name, icon_url } = body;
         const owner_id = req.user?.id;
         if (typeof owner_id !== 'number')
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
@@ -61,9 +59,7 @@ export function postServerInvite(req: AuthRequest, res: Response) {
         if (!isRegisterServerInvite(body)) {
             return res.status(400).json({ error: 'Invalid request body' });
         }
-        // Type assertion needed for CI environment
-        const validatedBody = body as RegisterServerInviteBody;
-        const { server_id, channel_id, max_uses, expires_at, temporary } = validatedBody;
+        const { server_id, channel_id, max_uses, expires_at, temporary } = body;
         if (typeof server_id !== 'number')
             return res.status(400).json({ error: 'Server ID is required and must be a number' });
 

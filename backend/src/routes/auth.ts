@@ -16,9 +16,7 @@ router.post('/register', async (req, res) => {
     }
 
     try {
-        // Type assertion needed for CI environment
-        const validatedBody = body as RegisterBody;
-        const user = await createUser(validatedBody);
+        const user = await createUser(body);
         return res.status(201).json({ id: user.id, username: user.username, email: user.email });
     } catch (err) {
         if (err instanceof HttpError) {
@@ -36,13 +34,11 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Invalid request body' });
     }
 
-    // Type assertion needed for CI environment
-    const validatedBody = body as LoginBody;
-    const user = findUserByUsername(validatedBody.username);
+    const user = findUserByUsername(body.username);
     if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
     }
-    const valid = await bcrypt.compare(validatedBody.password, user.password_hash);
+    const valid = await bcrypt.compare(body.password, user.password_hash);
     if (!valid) {
         return res.status(401).json({ error: 'Invalid credentials' });
     }
