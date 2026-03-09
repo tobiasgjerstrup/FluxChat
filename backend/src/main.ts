@@ -40,7 +40,7 @@ app.get('/api/health', (req: Request, res: Response) => res.json({ status: 'ok' 
 if (process.env.NODE_ENV !== 'test') {
     setupWebSocket(server);
     server.listen(config.port, config.ip, () => {
-        console.log(`Server running on port ${config.port}`);
+        console.log('Server running on port', config.port);
     });
 }
 

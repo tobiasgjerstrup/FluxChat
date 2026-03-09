@@ -17,19 +17,19 @@ import type {
     DBUser,
 } from '../model/db-types.js';
 
-type QueryParams = {
+interface QueryParams {
     limit?: number;
     offset?: number;
     search?: string;
-};
+}
 
 import { sqliteDBSetup } from '../db/sqlite.js';
 import bcrypt from 'bcrypt';
 import { HttpError } from '../utils/errors.js';
 
-const db: Database.Database = await sqliteDBSetup();
+const db: Database.Database = sqliteDBSetup();
 
-export async function getMessagesFromChannel(channelId: number) {
+export function getMessagesFromChannel(channelId: number) {
     const stmt = db.prepare(`
         SELECT messages.*, Users.username AS author_username
         FROM messages
@@ -175,20 +175,20 @@ export function createServerInvite({
     const info = stmt.run(
         code,
         server_id,
-        channel_id || null,
+        channel_id ?? null,
         creator_id,
-        max_uses || null,
-        expires_at || null,
+        max_uses ?? null,
+        expires_at ?? null,
         temporary ? 1 : 0,
     );
     return {
         id: Number(info.lastInsertRowid),
         code,
         server_id,
-        channel_id: channel_id || null,
+        channel_id: channel_id ?? null,
         creator_id,
-        max_uses: max_uses || null,
-        expires_at: expires_at || null,
+        max_uses: max_uses ?? null,
+        expires_at: expires_at ?? null,
         temporary: Boolean(temporary),
     };
 }
@@ -294,7 +294,7 @@ function findDMChannelByParticipants(userIds: DBUser['id'][]): DBDMChannel['id']
         const participants = db
             .prepare('SELECT user_id FROM DMParticipants WHERE dm_channel_id = ?')
             .all(row.dm_channel_id) as { user_id: DBUser['id'] }[];
-        const ids = participants.map((p) => Number(p.user_id)).sort((a, b) => a - b);
+        const ids = participants.map((p) => p.user_id).sort((a, b) => a - b);
         if (ids.length === sortedUserIds.length && ids.every((id, i) => id === sortedUserIds[i])) {
             return row.dm_channel_id;
         }
@@ -484,10 +484,8 @@ export function getFriends(user_id: DBUser['id']) {
          ) AS result
          ORDER BY result.username ASC`,
     );
-    return stmt.all(user_id, user_id, user_id, user_id, user_id) as Array<
-        Pick<DBUser, 'id' | 'username'> & {
-            status: DBFriendStatus;
-            relation_type: 'accepted' | 'outgoing' | 'incoming';
-        }
-    >;
+    return stmt.all(user_id, user_id, user_id, user_id, user_id) as (Pick<DBUser, 'id' | 'username'> & {
+        status: DBFriendStatus;
+        relation_type: 'accepted' | 'outgoing' | 'incoming';
+    })[];
 }

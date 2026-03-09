@@ -68,7 +68,7 @@ router.post('/refresh', (req, res) => {
         return res.status(401).json({ error: 'Missing Refresh-Token header' });
     }
 
-    let payload = { id: 0, username: '', type: '' };
+    let payload: { id: number; username: string; type: string };
     try {
         payload = jwt.verify(token, config.jwtSecret, { ignoreExpiration: true }) as {
             id: number;

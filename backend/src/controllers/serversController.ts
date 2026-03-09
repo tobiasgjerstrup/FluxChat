@@ -11,7 +11,20 @@ import { broadcastMessage } from '../ws/chat.js';
 import config from '../config.js';
 import { AuthRequest } from '../types/user.js';
 
-export async function getServers(req: AuthRequest, res: Response) {
+interface RegisterServerBody {
+    name: string;
+    icon_url?: string;
+}
+
+interface RegisterServerInviteBody {
+    server_id: number;
+    channel_id?: number;
+    max_uses?: number;
+    expires_at?: string;
+    temporary?: boolean;
+}
+
+export function getServers(req: AuthRequest, res: Response) {
     try {
         const owner_id = req.user?.id;
         if (typeof owner_id !== 'number')
@@ -28,16 +41,18 @@ export async function getServers(req: AuthRequest, res: Response) {
     }
 }
 
-export async function postServer(req: AuthRequest, res: Response) {
+export function postServer(req: AuthRequest, res: Response) {
     try {
-        const { name } = req.body;
-        if (!name) return res.status(400).json({ error: 'Name is required' });
-
+        const body: unknown = req.body;
+        if (!isRegisterServer(body)) {
+            return res.status(400).json({ error: 'Invalid request body' });
+        }
+        const { name, icon_url } = body;
         const owner_id = req.user?.id;
         if (typeof owner_id !== 'number')
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
 
-        const server = createServer({ name, owner_id, icon_url: req.body.icon_url });
+        const server = createServer({ name, owner_id, icon_url });
         addServerMember({ server_id: server.id, user_id: owner_id });
         broadcastMessage({ ...server, owner_id });
         res.status(201).json(server);
@@ -50,9 +65,13 @@ export async function postServer(req: AuthRequest, res: Response) {
     }
 }
 
-export async function postServerInvite(req: AuthRequest, res: Response) {
+export function postServerInvite(req: AuthRequest, res: Response) {
     try {
-        const { server_id, channel_id, max_uses, expires_at, temporary } = req.body;
+        const body: unknown = req.body;
+        if (!isRegisterServerInvite(body)) {
+            return res.status(400).json({ error: 'Invalid request body' });
+        }
+        const { server_id, channel_id, max_uses, expires_at, temporary } = body;
         if (typeof server_id !== 'number')
             return res.status(400).json({ error: 'Server ID is required and must be a number' });
 
@@ -79,7 +98,7 @@ export async function postServerInvite(req: AuthRequest, res: Response) {
     }
 }
 
-export async function joinServer(req: AuthRequest, res: Response) {
+export function joinServer(req: AuthRequest, res: Response) {
     try {
         const code = req.params.code;
         if (typeof code !== 'string') return res.status(400).json({ error: 'Invite code is required' });
@@ -96,4 +115,22 @@ export async function joinServer(req: AuthRequest, res: Response) {
         console.error(err);
         res.status(500).json({ error: 'Failed to join server with invite' });
     }
+}
+
+function isRegisterServer(value: unknown): value is RegisterServerBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return typeof b.name === 'string' && (b.icon_url === undefined || typeof b.icon_url === 'string');
+}
+
+function isRegisterServerInvite(value: unknown): value is RegisterServerInviteBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return (
+        typeof b.server_id === 'number' &&
+        (b.channel_id === undefined || typeof b.channel_id === 'number') &&
+        (b.max_uses === undefined || typeof b.max_uses === 'number') &&
+        (b.expires_at === undefined || typeof b.expires_at === 'string') &&
+        (b.temporary === undefined || typeof b.temporary === 'boolean')
+    );
 }
