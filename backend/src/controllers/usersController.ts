@@ -12,23 +12,12 @@ import {
 } from '../services/db.js';
 import { AuthRequest } from '../types/user.js';
 import { HttpError } from '../utils/errors.js';
-
-interface RegisterDMMessageBody {
-    content: string;
-}
-
-interface RespondToFriendRequestBody {
-    userId: number;
-    action: 'accept' | 'reject';
-}
-
-interface SendFriendRequestBody {
-    userId: number;
-}
-
-interface RemoveFriendRequestBody {
-    userId: number;
-}
+import type {
+    RegisterDMMessageBody,
+    RemoveFriendRequestBody,
+    RespondToFriendRequestBody,
+    SendFriendRequestBody,
+} from '@flux/shared';
 
 export function getDMParticipants(req: AuthRequest, res: Response) {
     try {

@@ -1,16 +1,7 @@
 import { Server as HttpServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
-
-interface WebSocketData extends WebSocket {
-    userId?: number;
-}
-
-interface WebSocketMessage {
-    type: string;
-    userId?: number;
-    targetId?: number;
-    [key: string]: unknown;
-}
+import type { WebSocketMessage } from '@flux/shared';
+import type { WebSocketData } from '../types/websocket.js';
 
 function isValidMessage(data: unknown): data is WebSocketMessage {
     return (

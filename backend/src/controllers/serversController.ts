@@ -10,19 +10,7 @@ import {
 import { broadcastMessage } from '../ws/chat.js';
 import config from '../config.js';
 import { AuthRequest } from '../types/user.js';
-
-interface RegisterServerBody {
-    name: string;
-    icon_url?: string;
-}
-
-interface RegisterServerInviteBody {
-    server_id: number;
-    channel_id?: number;
-    max_uses?: number;
-    expires_at?: string;
-    temporary?: boolean;
-}
+import type { RegisterServerBody, RegisterServerInviteBody } from '@flux/shared';
 
 export function getServers(req: AuthRequest, res: Response) {
     try {

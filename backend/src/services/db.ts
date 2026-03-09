@@ -16,12 +16,7 @@ import type {
     DBServerInvite,
     DBUser,
 } from '../model/db-types.js';
-
-interface QueryParams {
-    limit?: number;
-    offset?: number;
-    search?: string;
-}
+import type { QueryParams } from '../types/db.js';
 
 import { sqliteDBSetup } from '../db/sqlite.js';
 import bcrypt from 'bcrypt';

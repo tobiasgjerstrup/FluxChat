@@ -3,19 +3,15 @@ import { getMessagesFromChannel, getUsernameById, saveMessage } from '../service
 import { broadcastMessage } from '../ws/chat.js';
 import { HttpError } from '../utils/errors.js';
 import { AuthRequest } from '../types/user.js';
+import type { RegisterMessageBody } from '@flux/shared';
 
-interface RegisterMessageBody {
-    content: string;
-    channel_id: number;
-}
-
-export async function getMessages(req: Request, res: Response) {
+export function getMessages(req: Request, res: Response) {
     try {
         const channelId = req.params.channelId;
         if (!channelId || isNaN(Number(channelId))) {
             return res.status(400).json({ error: 'Channel ID is required' });
         }
-        const messages = await getMessagesFromChannel(Number(channelId));
+        const messages = getMessagesFromChannel(Number(channelId));
         res.json(messages);
     } catch (err) {
         if (err instanceof HttpError) {

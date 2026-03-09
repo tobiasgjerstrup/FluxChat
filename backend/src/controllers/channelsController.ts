@@ -3,12 +3,7 @@ import { createChannel, getChannelsFromServer } from '../services/db.js';
 import { broadcastMessage } from '../ws/chat.js';
 import { HttpError } from '../utils/errors.js';
 import { AuthRequest } from '../types/user.js';
-
-interface RegisterChannelBody {
-    server_id: number;
-    name: string;
-    type: 'text' | 'voice';
-}
+import type { RegisterChannelBody } from '@flux/shared';
 
 export function getChannels(req: Request, res: Response) {
     try {
