@@ -1,20 +1,77 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import { server, testUser, testToken } from './setup';
+import type { Response } from 'supertest';
+import { server, testUser, testToken } from './setup.js';
+
+interface AuthResponseBody {
+    token: string;
+    id: number;
+}
+
+interface MessageResponseBody {
+    message: string;
+}
+
+function getStringField(body: unknown, field: string): string {
+    if (typeof body !== 'object' || body === null || !(field in body)) {
+        throw new Error(`Response is missing ${field}`);
+    }
+
+    const value = (body as Record<string, unknown>)[field];
+    if (typeof value !== 'string') {
+        throw new Error(`Response field ${field} must be a string`);
+    }
+
+    return value;
+}
+
+function getNumberField(body: unknown, field: string): number {
+    if (typeof body !== 'object' || body === null || !(field in body)) {
+        throw new Error(`Response is missing ${field}`);
+    }
+
+    const value = (body as Record<string, unknown>)[field];
+    if (typeof value !== 'number') {
+        throw new Error(`Response field ${field} must be a number`);
+    }
+
+    return value;
+}
+
+function getAuthResponseBody(res: Response): AuthResponseBody {
+    return {
+        token: getStringField(res.body, 'token'),
+        id: getNumberField(res.body, 'id'),
+    };
+}
+
+function getMessageResponseBody(res: Response): MessageResponseBody {
+    return {
+        message: getStringField(res.body, 'message'),
+    };
+}
+
+function getTokenOrThrow(token: string | null): string {
+    if (typeof token !== 'string') {
+        throw new Error('Expected test token to be initialized');
+    }
+    return token;
+}
 
 describe('Users API', () => {
     it('GET /api/users returns all users (auth)', async () => {
-        const res = await request(server).get('/api/users').set('Authorization', `Bearer ${testToken}`);
+        const token = getTokenOrThrow(testToken);
+        const res = await request(server).get('/api/users').set('Authorization', `Bearer ${token}`);
         expect(res.status).toBe(200);
         // Add more assertions as needed
     });
 });
 
 describe('Friend Requests', () => {
-    const userA = { username: testUser.username + 'A', password: testUser.password, email: testUser.email + 'A' };
-    const userB = { username: testUser.username + 'B', password: testUser.password, email: testUser.email + 'B' };
-    const userC = { username: testUser.username + 'C', password: testUser.password, email: testUser.email + 'C' };
-    const userD = { username: testUser.username + 'D', password: testUser.password, email: testUser.email + 'D' };
+    const userA = { username: `${testUser.username}A`, password: testUser.password, email: `${testUser.email}A` };
+    const userB = { username: `${testUser.username}B`, password: testUser.password, email: `${testUser.email}B` };
+    const userC = { username: `${testUser.username}C`, password: testUser.password, email: `${testUser.email}C` };
+    const userD = { username: `${testUser.username}D`, password: testUser.password, email: `${testUser.email}D` };
     let tokenA: string, tokenB: string, userIdA: number, userIdB: number;
 
     it('should register and login two users', async () => {
@@ -23,15 +80,17 @@ describe('Friend Requests', () => {
         const loginA = await request(server)
             .post('/api/auth/login')
             .send({ username: userA.username, password: userA.password });
-        tokenA = loginA.body.token;
-        userIdA = loginA.body.id;
+        const loginABody = getAuthResponseBody(loginA);
+        tokenA = loginABody.token;
+        userIdA = loginABody.id;
         // Register B
         await request(server).post('/api/auth/register').send(userB);
         const loginB = await request(server)
             .post('/api/auth/login')
             .send({ username: userB.username, password: userB.password });
-        tokenB = loginB.body.token;
-        userIdB = loginB.body.id;
+        const loginBBody = getAuthResponseBody(loginB);
+        tokenB = loginBBody.token;
+        userIdB = loginBBody.id;
         expect(tokenA).toBeTruthy();
         expect(tokenB).toBeTruthy();
         expect(userIdA).toBeTruthy();
@@ -53,7 +112,7 @@ describe('Friend Requests', () => {
             .set('Authorization', `Bearer ${tokenB}`)
             .send({ userId: userIdA, action: 'accept' });
         expect(res.status).toBe(201);
-        expect(res.body.message).toBe('Friend request responded');
+        expect(getMessageResponseBody(res).message).toBe('Friend request responded');
     });
 
     it('should not allow duplicate friend requests', async () => {
@@ -62,7 +121,7 @@ describe('Friend Requests', () => {
             .set('Authorization', `Bearer ${tokenA}`)
             .send({ userId: userIdB });
         expect(resSend.status).toBe(400);
-        expect(resSend.body.message).toBe('You are already friends');
+        expect(getMessageResponseBody(resSend).message).toBe('You are already friends');
     });
 
     it('should remove friend', async () => {
@@ -71,7 +130,7 @@ describe('Friend Requests', () => {
             .set('Authorization', `Bearer ${tokenA}`)
             .send({ userId: userIdB });
         expect(res.status).toBe(201);
-        expect(res.body.message).toBe('Friend removed');
+        expect(getMessageResponseBody(res).message).toBe('Friend removed');
     });
 
     it('should send and deny a friend request', async () => {
@@ -80,7 +139,7 @@ describe('Friend Requests', () => {
             .post('/api/users/friends/send')
             .set('Authorization', `Bearer ${tokenB}`)
             .send({ userId: userIdA });
-        expect(resSend.body.message).toBe('Friend request sent');
+        expect(getMessageResponseBody(resSend).message).toBe('Friend request sent');
         expect(resSend.status).toBe(201);
         // Wait for the request to be available if needed
         await wait(500);
@@ -89,7 +148,7 @@ describe('Friend Requests', () => {
             .set('Authorization', `Bearer ${tokenA}`)
             .send({ userId: userIdB, action: 'reject' });
         expect(resDeny.status).toBe(201);
-        expect(resDeny.body.message).toBe('Friend request responded');
+        expect(getMessageResponseBody(resDeny).message).toBe('Friend request responded');
     });
 
     it('should not remove non-friends due to unrelated pending request', async () => {
@@ -97,14 +156,16 @@ describe('Friend Requests', () => {
         const loginC = await request(server)
             .post('/api/auth/login')
             .send({ username: userC.username, password: userC.password });
-        const tokenC = loginC.body.token;
-        const userIdC = loginC.body.id;
+        const loginCBody = getAuthResponseBody(loginC);
+        const tokenC = loginCBody.token;
+        const userIdC = loginCBody.id;
 
         await request(server).post('/api/auth/register').send(userD);
         const loginD = await request(server)
             .post('/api/auth/login')
             .send({ username: userD.username, password: userD.password });
-        const userIdD = loginD.body.id;
+        const loginDBody = getAuthResponseBody(loginD);
+        const userIdD = loginDBody.id;
 
         expect(tokenC).toBeTruthy();
         expect(userIdC).toBeTruthy();
@@ -121,7 +182,7 @@ describe('Friend Requests', () => {
             .set('Authorization', `Bearer ${tokenA}`)
             .send({ userId: userIdB });
         expect(removeRes.status).toBe(400);
-        expect(removeRes.body.message).toBe('You are not friends');
+        expect(getMessageResponseBody(removeRes).message).toBe('You are not friends');
     });
 });
 
