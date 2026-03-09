@@ -32,7 +32,6 @@ export function setupWebSocket(server: HttpServer) {
         // You can add authentication here if needed
 
         ws.on('message', (data) => {
-            let message: WebSocketMessage;
             try {
                 let dataStr: string;
                 if (Buffer.isBuffer(data)) {
@@ -46,56 +45,53 @@ export function setupWebSocket(server: HttpServer) {
                     throw new Error('Unexpected data type');
                 }
                 const parsed: unknown = JSON.parse(dataStr);
-                if (isValidMessage(parsed)) {
-                    message = parsed;
-                } else {
+                if (!isValidMessage(parsed)) {
                     console.error('Invalid message format from client', parsed);
                     return;
+                }
+                const message = parsed;
+
+                // Log all signaling messages
+                if (['webrtc-offer', 'webrtc-answer', 'webrtc-ice-candidate'].includes(message.type)) {
+                    const targetId = message.targetId;
+                    const fromUser = (ws as WebSocketData).userId;
+                    const fromUserStr = fromUser !== undefined ? String(fromUser) : 'unknown';
+                    const targetIdStr = targetId !== undefined ? String(targetId) : 'unknown';
+                    console.log(
+                        `[SIGNALING] type=${message.type} from=${fromUserStr} to=${targetIdStr} payload=`,
+                        JSON.stringify(message),
+                    );
+                    if (!targetId) {
+                        console.warn(`[SIGNALING] No targetId for message type=${message.type} from=${fromUserStr}`);
+                        return;
+                    }
+                    // Find the target client by a custom property (e.g., userId)
+                    let targetClient: WebSocketData | undefined;
+                    if (wss) {
+                        targetClient = Array.from(wss.clients).find(
+                            (client: WebSocketData) =>
+                                client !== ws && client.userId === targetId && client.readyState === WebSocket.OPEN,
+                        );
+                    }
+
+                    if (targetClient) {
+                        targetClient.send(JSON.stringify(message));
+                        console.log(`[SIGNALING] Relayed type=${message.type} from=${fromUserStr} to=${targetIdStr}`);
+                    } else {
+                        console.warn(
+                            `[SIGNALING] No client found for targetId=${targetIdStr} (from=${fromUserStr}, type=${message.type})`,
+                        );
+                    }
+                }
+
+                // Optionally: handle user registration to associate ws with userId
+                if (message.type === 'register' && typeof message.userId === 'number') {
+                    (ws as WebSocketData).userId = message.userId;
+                    console.log(`[REGISTER] userId=${String(message.userId)} associated with ws`);
                 }
             } catch (err) {
                 console.error('Invalid JSON from client', err);
                 return;
-            }
-
-            // Log all signaling messages
-            if (['webrtc-offer', 'webrtc-answer', 'webrtc-ice-candidate'].includes(message.type)) {
-                const targetId = message.targetId;
-                const fromUser = (ws as WebSocketData).userId;
-                console.log(
-                    `[SIGNALING] type=${message.type} from=${String(fromUser)} to=${String(targetId)} payload=`,
-                    JSON.stringify(message),
-                );
-                if (!targetId) {
-                    console.warn(`[SIGNALING] No targetId for message type=${message.type} from=${String(fromUser)}`);
-                    return;
-                }
-                // Find the target client by a custom property (e.g., userId)
-                let targetClient: WebSocketData | undefined;
-                if (wss) {
-                    targetClient = Array.from(wss.clients).find(
-                        (client: WebSocketData) =>
-                            client !== ws && client.userId === targetId && client.readyState === WebSocket.OPEN,
-                    );
-                }
-
-                if (targetClient) {
-                    targetClient.send(JSON.stringify(message));
-                    const fromUser = (ws as WebSocketData).userId;
-                    console.log(
-                        `[SIGNALING] Relayed type=${message.type} from=${String(fromUser)} to=${String(targetId)}`,
-                    );
-                } else {
-                    const fromUser = (ws as WebSocketData).userId;
-                    console.warn(
-                        `[SIGNALING] No client found for targetId=${String(targetId)} (from=${String(fromUser)}, type=${message.type})`,
-                    );
-                }
-            }
-
-            // Optionally: handle user registration to associate ws with userId
-            if (message.type === 'register' && typeof message.userId === 'number') {
-                (ws as WebSocketData).userId = message.userId;
-                console.log(`[REGISTER] userId=${String(message.userId)} associated with ws`);
             }
         });
     });

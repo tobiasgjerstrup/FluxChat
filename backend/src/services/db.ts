@@ -60,7 +60,7 @@ export async function createUser({ username, email, password }: RegisterBody) {
             "INSERT INTO Users (username, email, password_hash, created_at) VALUES (?, ?, ?, datetime('now'))",
         );
         const info = stmt.run(username, email, password_hash);
-        return { id: info.lastInsertRowid, username, email };
+        return { id: Number(info.lastInsertRowid), username, email };
     } catch (err) {
         if (err instanceof Database.SqliteError && err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
             throw new HttpError('Username or email already exists', 400);
