@@ -3,21 +3,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Server } from './server';
 
 describe('Server', () => {
-  let component: Server;
-  let fixture: ComponentFixture<Server>;
+    let component: Server;
+    let fixture: ComponentFixture<Server>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Server]
-    })
-    .compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [Server],
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(Server);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
-  });
+        fixture = TestBed.createComponent(Server);
+        component = fixture.componentInstance;
+        await fixture.whenStable();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

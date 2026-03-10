@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import type { WebSocketMessage } from '@flux/shared';
 
 @Injectable({ providedIn: 'root' })
 export class VoicechatService {
@@ -37,7 +38,7 @@ export class VoicechatService {
 
     private pendingCandidates: RTCIceCandidateInit[] = [];
     private currentPeerId: string | null = null;
-    private send(msg: any) {
+    private send(msg: WebSocketMessage) {
         if (typeof window === 'undefined') return;
         // Only set targetId to currentPeerId for answers and ICE candidates sent by the callee
         if ((msg.type === 'webrtc-answer' || msg.type === 'webrtc-ice-candidate') && this.currentPeerId) {
@@ -130,7 +131,7 @@ export class VoicechatService {
         return pc;
     }
 
-    private async handleSignalingMessage(message: any) {
+    private async handleSignalingMessage(message: WebSocketMessage) {
         if (typeof window === 'undefined') return;
         console.log('Received signaling message:', message); // <-- log incoming
         switch (message.type) {
@@ -146,15 +147,16 @@ export class VoicechatService {
         }
     }
 
-    private async handleOffer(message: any) {
+    private async handleOffer(message: WebSocketMessage) {
         if (typeof window === 'undefined') return;
         const { sdp, userId: callerId, targetId, iceServers } = message;
         // Always set currentPeerId to the caller's userId (the offer sender)
-        this.currentPeerId = callerId;
-        if (!iceServers || !iceServers.length) {
+        this.currentPeerId = (callerId as string) || null;
+        const iceServersArray = iceServers as RTCIceServer[];
+        if (!iceServersArray || !iceServersArray.length) {
             throw new Error('ICE servers must be provided by the user (from offer message).');
         }
-        this.peerConnection = this.createPeerConnection(this.currentPeerId || '', iceServers);
+        this.peerConnection = this.createPeerConnection(this.currentPeerId || '', iceServersArray);
         if (
             typeof window === 'undefined' ||
             !window.navigator ||
@@ -201,7 +203,7 @@ export class VoicechatService {
         this.send({ type: 'webrtc-answer', sdp: answer.sdp });
     }
 
-    private async handleAnswer(message: any) {
+    private async handleAnswer(message: WebSocketMessage) {
         if (typeof window === 'undefined') return;
         const { sdp } = message;
         if (this.peerConnection) {
@@ -210,7 +212,7 @@ export class VoicechatService {
         }
     }
 
-    private async handleIceCandidate(message: any) {
+    private async handleIceCandidate(message: WebSocketMessage) {
         if (typeof window === 'undefined') return;
         const { candidate } = message;
         if (this.peerConnection && candidate) {

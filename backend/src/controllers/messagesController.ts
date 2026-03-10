@@ -3,14 +3,15 @@ import { getMessagesFromChannel, getUsernameById, saveMessage } from '../service
 import { broadcastMessage } from '../ws/chat.js';
 import { HttpError } from '../utils/errors.js';
 import { AuthRequest } from '../types/user.js';
+import type { RegisterMessageBody } from '@flux/shared';
 
-export async function getMessages(req: Request, res: Response) {
+export function getMessages(req: Request, res: Response) {
     try {
         const channelId = req.params.channelId;
         if (!channelId || isNaN(Number(channelId))) {
             return res.status(400).json({ error: 'Channel ID is required' });
         }
-        const messages = await getMessagesFromChannel(Number(channelId));
+        const messages = getMessagesFromChannel(Number(channelId));
         res.json(messages);
     } catch (err) {
         if (err instanceof HttpError) {
@@ -21,11 +22,15 @@ export async function getMessages(req: Request, res: Response) {
     }
 }
 
-export async function postMessage(req: AuthRequest, res: Response) {
+export function postMessage(req: AuthRequest, res: Response) {
     try {
-        const { content, channel_id } = req.body;
+        const body: unknown = req.body;
+        if (!isRegisterMessage(body)) {
+            return res.status(400).json({ error: 'Invalid request body' });
+        }
+        const { content, channel_id } = body;
         if (!content || !channel_id) return res.status(400).json({ error: 'Content and channel ID are required' });
-        const author_id = req.user?.id || null; // req.user set by JWT middleware
+        const author_id = req.user?.id; // req.user set by JWT middleware
         if (typeof author_id !== 'number') {
             return res.status(500).json({ error: 'Something went wrong getting user ID' });
         }
@@ -40,4 +45,10 @@ export async function postMessage(req: AuthRequest, res: Response) {
         console.error(err);
         res.status(500).json({ error: 'Failed to save message' });
     }
+}
+
+function isRegisterMessage(value: unknown): value is RegisterMessageBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return typeof b.content === 'string' && typeof b.channel_id === 'number';
 }

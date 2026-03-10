@@ -12,6 +12,12 @@ import {
 } from '../services/db.js';
 import { AuthRequest } from '../types/user.js';
 import { HttpError } from '../utils/errors.js';
+import type {
+    RegisterDMMessageBody,
+    RemoveFriendRequestBody,
+    RespondToFriendRequestBody,
+    SendFriendRequestBody,
+} from '@flux/shared';
 
 export function getDMParticipants(req: AuthRequest, res: Response) {
     try {
@@ -36,14 +42,14 @@ export function getAllUsers(req: AuthRequest, res: Response) {
         const parsedLimit = req.query.limit ? parseInt(req.query.limit as string, 10) : MAX_LIMIT;
         const parsedOffset = req.query.offset ? parseInt(req.query.offset as string, 10) : undefined;
 
-        if (parsedLimit !== undefined && (isNaN(parsedLimit) || parsedLimit < 0)) {
+        if (isNaN(parsedLimit) || parsedLimit < 0) {
             return res.status(400).json({ message: 'Limit must be a non-negative number' });
         }
         if (parsedOffset !== undefined && (isNaN(parsedOffset) || parsedOffset < 0)) {
             return res.status(400).json({ message: 'Offset must be a non-negative number' });
         }
 
-        const limit = parsedLimit !== undefined ? Math.min(parsedLimit, MAX_LIMIT) : undefined;
+        const limit = Math.min(parsedLimit, MAX_LIMIT);
         const offset = parsedOffset;
         const search = req.query.search ? (req.query.search as string) : undefined;
 
@@ -70,7 +76,11 @@ export function getDirectMessage(req: AuthRequest, res: Response) {
 
 export function postDirectMessage(req: AuthRequest, res: Response) {
     try {
-        if (!req.body.content || typeof req.body.content !== 'string') {
+        const body: unknown = req.body;
+        if (!isRegisterDMMessage(body)) {
+            return res.status(400).json({ message: 'Invalid request body' });
+        }
+        if (!body.content || typeof body.content !== 'string') {
             return res.status(400).json({ message: 'Content is required and must be a string' });
         }
         if (typeof req.params.userId !== 'string' || isNaN(parseInt(req.params.userId))) {
@@ -85,7 +95,7 @@ export function postDirectMessage(req: AuthRequest, res: Response) {
         sendDirectMessage({
             author_id: author_id,
             participant_ids: [parseInt(req.params.userId), author_id],
-            content: req.body.content,
+            content: body.content,
         });
         res.status(201).json({ message: 'Message sent' });
     } catch (err) {
@@ -95,12 +105,13 @@ export function postDirectMessage(req: AuthRequest, res: Response) {
 }
 
 export function respondToFriendRequest(req: AuthRequest, res: Response) {
-    const { userId, action } = req.body;
+    const body: unknown = req.body;
+    if (!isRespondToFriendRequest(body)) {
+        return res.status(400).json({ message: 'Invalid request body' });
+    }
+    const { userId, action } = body;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
-    }
-    if (!action || (action !== 'accept' && action !== 'reject')) {
-        return res.status(400).json({ message: 'Action is required and must be either "accept" or "reject"' });
     }
 
     try {
@@ -110,7 +121,7 @@ export function respondToFriendRequest(req: AuthRequest, res: Response) {
         }
         if (action === 'accept') {
             userAccept(userIdToRespond, userId);
-        } else if (action === 'reject') {
+        } else {
             userReject(userIdToRespond, userId);
         }
         res.status(201).json({ message: 'Friend request responded' });
@@ -124,8 +135,12 @@ export function respondToFriendRequest(req: AuthRequest, res: Response) {
 }
 
 export function sendFriendRequest(req: AuthRequest, res: Response) {
+    const body: unknown = req.body;
+    if (!isSendFriendRequest(body)) {
+        return res.status(400).json({ message: 'Invalid request body' });
+    }
+    const { userId } = body;
     const userIdToAdd = req.user?.id;
-    const { userId } = req.body;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
     }
@@ -149,7 +164,11 @@ export function sendFriendRequest(req: AuthRequest, res: Response) {
 }
 
 export function removeFriend(req: AuthRequest, res: Response) {
-    const { userId } = req.body;
+    const body: unknown = req.body;
+    if (!isRemoveFriendRequest(body)) {
+        return res.status(400).json({ message: 'Invalid request body' });
+    }
+    const { userId } = body;
     const userIdToRemove = req.user?.id;
     if (!userId || typeof userId !== 'number') {
         return res.status(400).json({ message: 'User ID is required and must be a number' });
@@ -185,4 +204,28 @@ export function getAllFriends(req: AuthRequest, res: Response) {
         console.error(err);
         res.status(500).json({ message: 'Failed to fetch friends' });
     }
+}
+
+function isRegisterDMMessage(value: unknown): value is RegisterDMMessageBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return typeof b.content === 'string';
+}
+
+function isRespondToFriendRequest(value: unknown): value is RespondToFriendRequestBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return typeof b.userId === 'number' && (b.action === 'accept' || b.action === 'reject');
+}
+
+function isSendFriendRequest(value: unknown): value is SendFriendRequestBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return typeof b.userId === 'number';
+}
+
+function isRemoveFriendRequest(value: unknown): value is RemoveFriendRequestBody {
+    if (typeof value !== 'object' || value === null) return false;
+    const b = value as Record<string, unknown>;
+    return typeof b.userId === 'number';
 }

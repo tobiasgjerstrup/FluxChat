@@ -29,6 +29,7 @@
         "@angular/platform-server": "^21.1.0",
         "@angular/router": "^21.1.0",
         "@angular/ssr": "^21.1.3",
+        "@flux/shared": "*",
         "electron-updater": "^6.8.3",
         "express": "^5.1.0",
         "rxjs": "~7.8.0",

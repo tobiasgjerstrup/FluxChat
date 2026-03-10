@@ -5,7 +5,7 @@ import { HttpError } from '../utils/errors.js';
 import { AuthRequest } from '../types/user.js';
 
 export function jwtAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: 'No token provided' });
     const token = authHeader.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Malformed token' });

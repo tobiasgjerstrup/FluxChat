@@ -10,7 +10,7 @@
         "start": "npx tsx --watch src/main.ts",
         "build": "tsgo",
         "test": "vitest --ui",
-        "lint": "npx eslint . --max-warnings=0"
+        "lint": "eslint . --max-warnings=0"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
@@ -32,6 +32,7 @@
         "vitest": "^4.0.18"
     },
     "dependencies": {
+        "@flux/shared": "*",
         "bcrypt": "^6.0.0",
         "better-sqlite3": "^12.6.2",
         "cors": "^2.8.6",

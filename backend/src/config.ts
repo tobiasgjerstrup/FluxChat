@@ -2,22 +2,12 @@ import path from 'path';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import type { StringValue } from 'ms';
+import type { Config } from './types/config.js';
 
 if (process.env.NODE_ENV === 'test') {
     dotenv.config({ path: '.env.test' });
 } else {
     dotenv.config();
-}
-
-interface Config {
-    jwtSecret: string;
-    jwtExpiration: StringValue;
-    jwtRefreshSecret: string;
-    jwtRefreshExpiration: StringValue;
-    port: number;
-    ip: string;
-    dbPath: string;
-    frontendUrl: string;
 }
 
 const rawConfig = {
