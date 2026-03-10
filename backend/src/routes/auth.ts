@@ -4,7 +4,7 @@ import config from '../config.js';
 import { createUser, findUserByUsername, getRefreshToken, storeRefreshToken } from '../services/db.js';
 import bcrypt from 'bcrypt';
 import { HttpError } from '../utils/errors.js';
-import { LoginBody, RegisterBody } from '@flux/shared';
+import type { LoginBody, RegisterBody } from '@flux/shared';
 
 const router = Router();
 

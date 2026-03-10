@@ -10,7 +10,7 @@
         "start": "npx tsx --watch src/main.ts",
         "build": "tsgo",
         "test": "vitest --ui",
-        "lint": "npx eslint . --max-warnings=0"
+        "lint": "eslint . --max-warnings=0"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
