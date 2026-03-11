@@ -2,7 +2,6 @@
     "compilerOptions": {
         "target": "ES2024",
         "module": "NodeNext",
-        "baseUrl": ".",
         "paths": {
             "@flux/shared": ["../shared/src/index.ts"]
         },
