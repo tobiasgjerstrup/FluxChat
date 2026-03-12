@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Chat } from './chat/chat';
+import { Chat } from '../../../shared/chat/chat';
 
 @Component({
     selector: 'app-channel',
