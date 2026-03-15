@@ -1,5 +1,10 @@
 #!/bin/bash
-set -euo pipefail
+set -eu
+
+# Enable pipefail when supported (bash/zsh), skip on shells like dash.
+if [ -n "${BASH_VERSION:-}" ]; then
+    set -o pipefail
+fi
 
 # --- Configuration ---
 REPO_DIR="${REPO_DIR:-/mnt/T9/FluxChat}"

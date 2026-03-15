@@ -11,7 +11,10 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync/atomic"
 )
+
+var deployInProgress atomic.Bool
 
 type PushEvent struct {
 	Ref        string `json:"ref"`
@@ -90,18 +93,30 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 		deployScript = "./deploy.sh"
 	}
 
-	cmd := exec.Command("/bin/bash", deployScript)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		log.Printf("deploy script failed: %v", err)
-		http.Error(w, "deploy failed", http.StatusInternalServerError)
+	if !deployInProgress.CompareAndSwap(false, true) {
+		log.Println("deployment already in progress, skipping new request")
+		w.WriteHeader(http.StatusAccepted)
+		w.Write([]byte("ignored: deploy already running"))
 		return
 	}
 
-	log.Println("deploy completed successfully")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("deployed"))
+	go func(scriptPath string) {
+		defer deployInProgress.Store(false)
+
+		cmd := exec.Command("/bin/bash", scriptPath)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		if err := cmd.Run(); err != nil {
+			log.Printf("deploy script failed: %v", err)
+			return
+		}
+
+		log.Println("deploy completed successfully")
+	}(deployScript)
+
+	w.WriteHeader(http.StatusAccepted)
+	w.Write([]byte("deploy started"))
 }
 
 func main() {
