@@ -4,12 +4,12 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
-WorkingDirectory=/mnt/T9/fluxchat/webhook
+User=tobias
+WorkingDirectory=/mnt/T9/FluxChat/webhook
 
 # Environment variables — override via a drop-in or EnvironmentFile
-EnvironmentFile=/mnt/T9/fluxchat/webhook/.env
-ExecStart=/mnt/T9/fluxchat/webhook/webhook
+EnvironmentFile=/mnt/T9/FluxChat/webhook/.env
+ExecStart=/mnt/T9/FluxChat/webhook/webhook
 Restart=on-failure
 RestartSec=5
 
