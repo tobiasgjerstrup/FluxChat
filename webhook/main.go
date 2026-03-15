@@ -90,7 +90,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 		deployScript = "./deploy.sh"
 	}
 
-	cmd := exec.Command("/bin/sh", deployScript)
+	cmd := exec.Command("/bin/bash", deployScript)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
