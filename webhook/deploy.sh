@@ -9,6 +9,7 @@ PM2_BACKEND_CWD="${PM2_BACKEND_CWD:-$REPO_DIR/backend}"
 PM2_BACKEND_START_CMD="${PM2_BACKEND_START_CMD:-npm run start}"
 FRONTEND_BUILD_CWD="${FRONTEND_BUILD_CWD:-$REPO_DIR/frontend}"
 FRONTEND_BUILD_CMD="${FRONTEND_BUILD_CMD:-npm run build}"
+PM2_STARTED_NEW_BACKEND=0
 
 log() { echo "[deploy] $(date '+%Y-%m-%d %H:%M:%S') $*"; }
 
@@ -44,6 +45,12 @@ if command -v pm2 >/dev/null 2>&1; then
     else
         log "PM2 process $PM2_BACKEND_PROCESS not found, starting it..."
         pm2 start bash --name "$PM2_BACKEND_PROCESS" -- -lc "cd '$PM2_BACKEND_CWD' && $PM2_BACKEND_START_CMD"
+        PM2_STARTED_NEW_BACKEND=1
+    fi
+
+    if [ "$PM2_STARTED_NEW_BACKEND" -eq 1 ]; then
+        log "Saving PM2 process list..."
+        pm2 save
     fi
 else
     log "WARNING: pm2 is not installed or not in PATH"
