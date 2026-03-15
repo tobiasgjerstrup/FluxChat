@@ -7,6 +7,8 @@ DEPLOY_USER="${DEPLOY_USER:-$(whoami)}"
 PM2_BACKEND_PROCESS="${PM2_BACKEND_PROCESS:-fluxchat-backend}"
 PM2_BACKEND_CWD="${PM2_BACKEND_CWD:-$REPO_DIR/backend}"
 PM2_BACKEND_START_CMD="${PM2_BACKEND_START_CMD:-npm run start}"
+FRONTEND_BUILD_CWD="${FRONTEND_BUILD_CWD:-$REPO_DIR/frontend}"
+FRONTEND_BUILD_CMD="${FRONTEND_BUILD_CMD:-npm run build}"
 
 log() { echo "[deploy] $(date '+%Y-%m-%d %H:%M:%S') $*"; }
 
@@ -26,6 +28,12 @@ npm install --workspaces
 # Build shared library
 log "Building shared..."
 cd shared && npm run build 2>/dev/null || true
+cd "$REPO_DIR"
+
+# Build frontend
+log "Building frontend..."
+cd "$FRONTEND_BUILD_CWD"
+$FRONTEND_BUILD_CMD
 cd "$REPO_DIR"
 
 # Restart backend process (PM2)
