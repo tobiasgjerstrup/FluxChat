@@ -6,6 +6,12 @@
     "author": "",
     "type": "module",
     "main": "index.js",
+    "private": true,
+    "workspaces": [
+        "backend",
+        "frontend",
+        "shared"
+    ],
     "scripts": {
         "start": "npx concurrently -c \"blue,green\" --names \"frontend,backend\" \"npm run start:frontend\" \"npm run start:backend\"",
         "start:frontend": "cd frontend && npm start",

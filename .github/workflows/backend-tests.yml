@@ -5,6 +5,7 @@ on:
         branches: [main, develop]
         paths:
             - 'backend/**'
+            - 'shared/**'
             - '.github/workflows/backend-tests.yml'
 
 jobs:
@@ -19,15 +20,19 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 24
+                  cache: npm
+
+            - name: install typescript-preview
+              run: npm i -g @typescript/native-preview
 
             - name: Install dependencies
-              working-directory: backend
-              run: npm install
+              run: npm ci
+
+            - name: Build backend
+              run: npm run build -w backend
 
             - name: Run tests
-              working-directory: backend
-              run: npm test
+              run: npm run test -w backend
 
             - name: Lint backend
-              working-directory: backend
-              run: npx eslint . --max-warnings=0
+              run: npm run lint -w backend

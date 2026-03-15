@@ -3,6 +3,15 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { signal } from '@angular/core';
 import { environment } from '../../environments/environment';
+import type {
+    RegisterChannelBody,
+    RegisterMessageBody,
+    RegisterServerBody,
+    RegisterServerInviteBody,
+    RemoveFriendRequestBody,
+    RespondToFriendRequestBody,
+    SendFriendRequestBody,
+} from '@flux/shared';
 
 export interface JWTPayload {
     id: number;
@@ -77,9 +86,8 @@ export class Api {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return firstValueFrom(
-            this.http.post<Message>(`${environment.ip}/api/messages`, { content, channel_id }, { headers }),
-        );
+        const body: RegisterMessageBody = { content, channel_id };
+        return firstValueFrom(this.http.post<Message>(`${environment.ip}/api/messages`, body, { headers }));
     }
 
     public connectWebSocket(): WebSocket {
@@ -104,7 +112,8 @@ export class Api {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return firstValueFrom(this.http.post<Server>(`${environment.ip}/api/servers`, { name, icon_url }, { headers }));
+        const body: RegisterServerBody = { name, icon_url };
+        return firstValueFrom(this.http.post<Server>(`${environment.ip}/api/servers`, body, { headers }));
     }
 
     public async getChannels(server_id: number): Promise<Channel[]> {
@@ -121,9 +130,8 @@ export class Api {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
-        return firstValueFrom(
-            this.http.post<Channel>(`${environment.ip}/api/channels`, { name, server_id, type: 'text' }, { headers }),
-        );
+        const body: RegisterChannelBody = { name, server_id, type: 'text' };
+        return firstValueFrom(this.http.post<Channel>(`${environment.ip}/api/channels`, body, { headers }));
     }
 
     public async createServerInvite(server_id: number) {
@@ -131,10 +139,11 @@ export class Api {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
+        const body: RegisterServerInviteBody = { server_id };
         return firstValueFrom(
             this.http.post<{ message: string; invite_code: string; invite_link: string }>(
                 `${environment.ip}/api/servers/invite`,
-                { server_id },
+                body,
                 { headers },
             ),
         );
@@ -179,20 +188,14 @@ export class Api {
             Authorization: `Bearer ${this.JWT()}`,
         });
         if (action === 'add') {
+            const body: SendFriendRequestBody = { userId };
             return firstValueFrom(
-                this.http.post<{ message: string }>(
-                    `${environment.ip}/api/users/friends/send`,
-                    { userId: userId },
-                    { headers },
-                ),
+                this.http.post<{ message: string }>(`${environment.ip}/api/users/friends/send`, body, { headers }),
             );
         } else {
+            const body: RespondToFriendRequestBody = { userId, action };
             return firstValueFrom(
-                this.http.post<{ message: string }>(
-                    `${environment.ip}/api/users/friends/respond`,
-                    { userId: userId, action: action },
-                    { headers },
-                ),
+                this.http.post<{ message: string }>(`${environment.ip}/api/users/friends/respond`, body, { headers }),
             );
         }
     }
@@ -202,12 +205,9 @@ export class Api {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.JWT()}`,
         });
+        const body: RemoveFriendRequestBody = { userId };
         return firstValueFrom(
-            this.http.post<{ message: string }>(
-                `${environment.ip}/api/users/friends/remove`,
-                { userId: userId },
-                { headers },
-            ),
+            this.http.post<{ message: string }>(`${environment.ip}/api/users/friends/remove`, body, { headers }),
         );
     }
 

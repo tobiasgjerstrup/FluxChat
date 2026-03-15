@@ -3,7 +3,7 @@ import config from '../config.js';
 
 let db: Database.Database | null = null;
 
-export async function sqliteDBSetup() {
+export function sqliteDBSetup() {
     if (!db) {
         db = new Database(config.dbPath);
         db.pragma('journal_mode = WAL');
