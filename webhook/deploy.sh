@@ -4,6 +4,9 @@ set -euo pipefail
 # --- Configuration ---
 REPO_DIR="${REPO_DIR:-/mnt/T9/FluxChat}"
 DEPLOY_USER="${DEPLOY_USER:-$(whoami)}"
+PM2_BACKEND_PROCESS="${PM2_BACKEND_PROCESS:-fluxchat-backend}"
+PM2_BACKEND_CWD="${PM2_BACKEND_CWD:-$REPO_DIR/backend}"
+PM2_BACKEND_START_CMD="${PM2_BACKEND_START_CMD:-npm run start}"
 
 log() { echo "[deploy] $(date '+%Y-%m-%d %H:%M:%S') $*"; }
 
@@ -25,12 +28,17 @@ log "Building shared..."
 cd shared && npm run build 2>/dev/null || true
 cd "$REPO_DIR"
 
-# Restart backend service
-if systemctl is-active --quiet fluxchat-backend; then
-    log "Restarting fluxchat-backend..."
-    systemctl restart fluxchat-backend
+# Restart backend process (PM2)
+if command -v pm2 >/dev/null 2>&1; then
+    if pm2 describe "$PM2_BACKEND_PROCESS" >/dev/null 2>&1; then
+        log "Restarting PM2 process $PM2_BACKEND_PROCESS..."
+        pm2 restart "$PM2_BACKEND_PROCESS" --update-env
+    else
+        log "PM2 process $PM2_BACKEND_PROCESS not found, starting it..."
+        pm2 start bash --name "$PM2_BACKEND_PROCESS" -- -lc "cd '$PM2_BACKEND_CWD' && $PM2_BACKEND_START_CMD"
+    fi
 else
-    log "WARNING: fluxchat-backend service is not running"
+    log "WARNING: pm2 is not installed or not in PATH"
 fi
 
 # Restart frontend service (if applicable)
