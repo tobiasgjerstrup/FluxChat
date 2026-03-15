@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # --- Configuration ---
-REPO_DIR="${REPO_DIR:-/mnt/T9/fluxchat}"
+REPO_DIR="${REPO_DIR:-/mnt/T9/FluxChat}"
 DEPLOY_USER="${DEPLOY_USER:-$(whoami)}"
 
 log() { echo "[deploy] $(date '+%Y-%m-%d %H:%M:%S') $*"; }
