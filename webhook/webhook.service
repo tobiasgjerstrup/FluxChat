@@ -1,0 +1,21 @@
+[Unit]
+Description=FluxChat GitHub Webhook Auto-Deploy
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/mnt/T9/fluxchat/webhook
+
+# Environment variables — override via a drop-in or EnvironmentFile
+EnvironmentFile=/mnt/T9/fluxchat/webhook/.env
+ExecStart=/mnt/T9/fluxchat/webhook/webhook
+Restart=on-failure
+RestartSec=5
+
+# Allow the service to run systemctl restart for other services
+# Requires that www-data has passwordless sudo for those specific commands
+# (configure in /etc/sudoers.d/fluxchat-deploy)
+
+[Install]
+WantedBy=multi-user.target
